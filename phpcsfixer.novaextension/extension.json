@@ -2,9 +2,9 @@
   "identifier": "biati.phpcsfixer",
   "name": "PHP CS Fixer",
   "organization": "biati",
-  "description": "Automatically format PHP files on save using php-cs-fixer.",
+  "description": "Automatically format PHP files on save using php-cs-fixer with HTML support.",
   "version": "1.0",
-  "bugs": "",
+  "bugs": "https://github.com/biati-digital/nova-php-cs-fixer/issues",
   "categories": ["formatters"],
   "main": "main.dist.js",
   "activationEvents": ["onLanguage:php"],
@@ -102,10 +102,11 @@
     }
   ],
   "commands": {
-    "extensions": [
+    "editor": [
       {
-        "title": "PHP Fix document",
-        "command": "biati.phpcsfixer.format"
+        "title": "Format with PHP-CS-Fixer",
+        "command": "biati.phpcsfixer.format",
+        "shortcut": "option-shift-f"
       }
     ]
   }

@@ -9,6 +9,9 @@ const serverInstance = new Server('PHP CS Fixer');
 exports.activate = function () {
     const formater = new PHPFormatter(serverInstance);
 
+    nova.commands.register(nova.extension.identifier + '.format', (editor) => {
+        return formater.format(editor, false);
+    });
     nova.workspace.onDidAddTextEditor((editor) => {
         return editor.onWillSave(formater.process.bind(formater));
     });

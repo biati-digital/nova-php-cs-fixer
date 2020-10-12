@@ -11,14 +11,22 @@ class PHPFormatter {
         this.localCSConfig = this.findLocalCSConfig();
     }
 
+    /*
+     * Process
+     * called on event "onWillSave"
+     */
     async process(editor) {
         if (!this.extensionConfig.onsave || nova.path.extname(editor.document.path) !== '.php') {
             return;
         }
-        await this.format(editor);
+        await this.format(editor, true);
     }
 
-    async format(editor) {
+    /*
+     * Format
+     * start the format process
+     */
+    async format(editor, dosave = true) {
         const uri = editor.document.uri;
         const filePath = editor.document.path;
         const fileName = nova.path.basename(filePath);
@@ -34,26 +42,6 @@ class PHPFormatter {
 
         if (this.extensionConfig.htmltry) {
             text = this.formatHTML(text);
-            //console.log(this.extensionConfig.htmlrules);
-            /*const HTMLConfig = this.stringToObject(this.extensionConfig.htmlrules);
-            if (HTMLConfig.hasOwnProperty('indent_size')) {
-                HTMLConfig.indent_size = 4;
-            }
-            if (HTMLConfig.hasOwnProperty('indent_with_tabs')) {
-                HTMLConfig.indent_with_tabs = false;
-            }*/
-
-            // Overwrite tabs, PHP use spaces only
-            // otherwise we'll endup with mixed indentation
-            //HTMLConfig.end_with_newline = false;
-            //HTMLConfig.content_unformatted = ;
-
-            /*const startTime = Date.now();
-            log('Format HTML inside PHP before processing PHP with config');
-            log(JSON.stringify(HTMLConfig));
-            text = beautifyHtml(text, HTMLConfig);
-            const elapsedTime = Date.now() - startTime;
-            log(`HTML in PHP formatted in ${elapsedTime}ms`);*/
         }
 
         const tmpFile = await this.tmpFile(filePath, text);
@@ -71,7 +59,7 @@ class PHPFormatter {
             return;
         }
 
-        await this.setFormattedValue({ editor, content, formatted });
+        await this.setFormattedValue({ editor, content, formatted, dosave });
     }
 
     /*
@@ -181,6 +169,13 @@ class PHPFormatter {
         });
     }
 
+    /*
+     * Format HTML
+     * format using js-beautify
+     *
+     * @param string
+     * @return string
+     */
     formatHTML(text) {
         const HTMLConfig = Object.assign(
             {
@@ -215,7 +210,7 @@ class PHPFormatter {
      * https://github.com/alexanderweiss/nova-prettier
      *
      */
-    async setFormattedValue({ editor, content, formatted }) {
+    async setFormattedValue({ editor, content, formatted, dosave }) {
         const POSSIBLE_CURSORS = String.fromCharCode(0xfffd, 0xffff, 0x1f094, 0x1f08d, 0xe004, 0x1f08d).split('');
         const documentRange = new Range(0, editor.document.length);
         const selectionStart = editor.selectedRange.start;
@@ -227,7 +222,9 @@ class PHPFormatter {
             editor.edit((e) => {
                 e.replace(documentRange, formatted.content);
             });
-            this.ensureSaved(editor, content, formatted);
+            if (dosave) {
+                this.ensureSaved(editor, content, formatted);
+            }
             return;
         }
 
@@ -274,7 +271,9 @@ class PHPFormatter {
         editPromise
             .then(() => {
                 editor.selectedRanges = [new Range(newSelectionStart, newSelectionEnd)];
-                this.ensureSaved(editor, content, formatted);
+                if (dosave) {
+                    this.ensureSaved(editor, content, formatted);
+                }
             })
             .catch((err) => console.error(err));
     }
@@ -344,8 +343,6 @@ class PHPFormatter {
         if (!document.isDirty) return;
         if (document.isClosed) return;
         if (document.isUntitled) return;
-
-        //if (formatted.content !== content) return;
 
         this.formattedText.set(editor, formatted.content);
         editor.save();
