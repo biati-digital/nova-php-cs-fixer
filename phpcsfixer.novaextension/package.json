@@ -1,0 +1,22 @@
+{
+  "name": "biati.postcss",
+  "version": "1.3.0",
+  "description": "PostCSS preprocessor",
+  "main": "main.js",
+  "scripts": {
+    "build": "npx rollup -c",
+    "watch": "onchange -i \"src/**/*.js\" -- npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alexanderweiss/nova-prettier.git"
+  },
+  "author": "biati",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/alexanderweiss/nova-prettier/issues"
+  },
+  "homepage": "https://github.com/alexanderweiss/nova-prettier#readme",
+  "dependencies": {},
+  "devDependencies": {}
+}
