@@ -48,7 +48,6 @@ function add_google_analytics()
             ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
         })();
         </script>
-        
         <?php
     }
 }
