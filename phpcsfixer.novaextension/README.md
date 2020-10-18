@@ -2,9 +2,16 @@
 
 This is an extension for Nova to format PHP files on save or by command, it can handle HTML inside the PHP code.
 
+## Features
+
+-   Works out of the box no need to install anything
+-   HTML support, it can handle files with inline HTML
+-   Many options to customize the formatter the way you want
+-   Format on save, using a command or right click
+
 ## Before Start
 
-If you are using Prettier by alexanderweiss make sure to go to Prettier Preferences and in the section **Ignored Syntaxes** make sure to select PHP.
+If you are using Prettier by Alexander Weiss make sure to go to Prettier Preferences and in the section **Ignored Syntaxes** select PHP.
 
 ## Configuration
 
