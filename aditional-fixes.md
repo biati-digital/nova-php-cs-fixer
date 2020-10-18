@@ -1,3 +1,5 @@
+# Aditional HTML/PHP Fixes
+
 This extensions apart from beautifying HTML and PHP it handle some cases when PHP has inlined HTML and some results are not what we are expecting, here are examples of those errors and the applied fix, this file will keep a record all the fixes implemented
 
 ### Fix Inlined HTML fix id 1: example
