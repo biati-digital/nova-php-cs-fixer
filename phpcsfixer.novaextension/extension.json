@@ -3,7 +3,8 @@
   "name": "PHP CS Fixer",
   "organization": "biati",
   "description": "Automatically format PHP files on save using php-cs-fixer with HTML support.",
-  "version": "1.0",
+  "version": "1.0.1",
+  "repository": "https://github.com/biati-digital/nova-php-cs-fixer",
   "bugs": "https://github.com/biati-digital/nova-php-cs-fixer/issues",
   "categories": ["formatters"],
   "main": "main.dist.js",
@@ -17,6 +18,7 @@
     {
       "title": "PHP CS Fixer Configuration",
       "description": "Handle php-cs-fixer configuration",
+      "link": "https://mlocati.github.io/php-cs-fixer-configurator/",
       "type": "section",
       "children": [
         {
@@ -88,6 +90,14 @@
           "key": "biati.phpcsfixer.htmltry",
           "title": "Format HTML in PHP files",
           "description": "Enable this box to try to fix HTML in PHP files",
+          "type": "boolean",
+          "default": true
+        },
+        {
+          "key": "biati.phpcsfixer.htmladditional",
+          "title": "Apply Additional fixes",
+          "description": "Enable this box to apply aditional fixes to HTML/PHP files",
+          "link": "https://github.com/biati-digital/nova-php-cs-fixer/blob/main/aditional-fixes.md",
           "type": "boolean",
           "default": false
         },
