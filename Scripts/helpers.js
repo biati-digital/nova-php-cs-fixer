@@ -30,8 +30,22 @@ function showActionableNotification(id, title, body, actions, callback) {
         .catch((err) => console.error(err, err.stack));
 }
 
+function cleanDirectory(folderPath, extension = '') {
+    try {
+        const filesInDir = nova.fs.listdir(folderPath);
+
+        filesInDir.forEach((file) => {
+            const filePath = nova.path.join(folderPath, file);
+            nova.fs.remove(filePath);
+        });
+    } catch (error) {
+        console.error(error);
+    }
+}
+
 module.exports = {
     log,
     showNotification,
     showActionableNotification,
+    cleanDirectory,
 };
