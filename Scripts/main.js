@@ -1,10 +1,9 @@
 const extensionInstaller = require('./installer.js');
-//const SingleProcess = require('./process.js');
 const Server = require('./server.js');
 const PHPFormatter = require('./formatter.js');
 const compositeDisposable = new CompositeDisposable();
-const { log } = require('./helpers.js');
 const serverInstance = new Server('PHP CS Fixer');
+const { log, cleanDirectory } = require('./helpers.js');
 
 exports.activate = function () {
     const formater = new PHPFormatter(serverInstance);
@@ -28,5 +27,6 @@ exports.activate = function () {
 };
 
 exports.deactivate = function () {
+    cleanDirectory(nova.extension.workspaceStoragePath);
     compositeDisposable.dispose();
 };

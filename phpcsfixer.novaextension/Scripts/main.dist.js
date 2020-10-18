@@ -205,10 +205,24 @@ function showActionableNotification(id, title, body, actions, callback) {
         .catch((err) => console.error(err, err.stack));
 }
 
+function cleanDirectory(folderPath, extension = '') {
+    try {
+        const filesInDir = nova.fs.listdir(folderPath);
+
+        filesInDir.forEach((file) => {
+            const filePath = nova.path.join(folderPath, file);
+            nova.fs.remove(filePath);
+        });
+    } catch (error) {
+        console.error(error);
+    }
+}
+
 var helpers = {
     log,
     showNotification,
     showActionableNotification,
+    cleanDirectory,
 };
 
 const compositeDisposable = new CompositeDisposable();
@@ -6351,6 +6365,8 @@ class PHPFormatter {
             text = this.formatHTML(text);
         }
 
+        //text = this.prePHPClenup(text);
+
         const tmpFile = await this.tmpFile(filePath, text);
         const command = await this.getCommand(tmpFile);
 
@@ -6365,6 +6381,8 @@ class PHPFormatter {
             log$2('Unable to format document' + formatted.error, true);
             return;
         }
+
+        formatted.content = this.afterTextFormatted(formatted.content);
 
         await this.setFormattedValue({ editor, content, formatted, dosave });
     }
@@ -6509,6 +6527,90 @@ class PHPFormatter {
     }
 
     /*
+     * Some precleanup for more
+     * accurate results
+     */
+    prePHPClenup(text) {
+        var re = / *?<\?php([\n\r] +)[A-Za-z]+/g;
+        var m;
+        do {
+            m = re.exec(text);
+            if (m) {
+                const cleanedStr = m[0].replace(m[1], '\n' + m[0].substring(0, m[0].indexOf('<')));
+                text = text.replace(m[0], cleanedStr);
+            }
+        } while (m);
+
+        return text;
+    }
+
+    afterTextFormatted(text) {
+        //var re = /{\s\S*( +)\?>[\n\r]([\s\S]*?^<\?php)/gm;
+        let re = /{\s\S*( +)\?>[\n\r]+?(<[\S]+.*>[\s\S]*?^<[\/!].*>[\n\r]+?^<\?php)/gm;
+        let m;
+        do {
+            m = re.exec(text);
+            if (m) {
+                if (m.length == 3) {
+                    var fullmatch = m[0];
+                    var space = m[1];
+                    var toindent = m[2];
+
+                    // Fix Inlined HTML fix id 1
+                    const reindented = this.indentLines(space, toindent);
+                    const newFixed = fullmatch.replace(toindent, reindented);
+                    text = text.replace(fullmatch, newFixed);
+                }
+            }
+        } while (m);
+
+        // Fix no space in closing PHP tag id 2
+        text = text.replace(/}\?>/, '} ?>');
+
+        // Fix no space in closing PHP tag and html tag id 3
+        let re3 = /( +)?\?>( +)?<\w+>/gm;
+        let m3;
+        do {
+            m3 = re3.exec(text);
+            if (m3) {
+                const fullmatch = m3[0];
+                let fixed = '';
+
+                if (m3.length == 2) {
+                    fixed = fullmatch.replace(m3[1], '\n');
+                }
+                if (m3.length == 3) {
+                    let space = m3[1] ? m3[1] : '';
+                    if (!m3[2]) {
+                        fixed = fullmatch.replace('?><', '?>\n<' + space);
+                    } else {
+                        fixed = fullmatch.replace('>' + m3[2], '>\n' + space);
+                    }
+                }
+                if (fixed) {
+                    text = text.replace(fullmatch, fixed);
+                }
+            }
+        } while (m3);
+
+        return text;
+    }
+
+    /**
+     * Indent lines
+     * passed a string it will indent
+     * each line with the specified
+     * content
+     */
+    indentLines(before, text) {
+        const result = text.split('\n').map((line) => {
+            return before + line;
+        });
+
+        return result.join('\n');
+    }
+
+    /*
      * Set Formatted value
      * once the content is formatted
      * set the editor content and cursor
@@ -6518,6 +6620,13 @@ class PHPFormatter {
      *
      */
     async setFormattedValue({ editor, content, formatted, dosave }) {
+        // No need to update if the content and the
+        // formatted content are the same
+        if (content == formatted.content) {
+            log$2('Nothing changed so the content will not be updated');
+            return false;
+        }
+
         const POSSIBLE_CURSORS = String.fromCharCode(0xfffd, 0xffff, 0x1f094, 0x1f08d, 0xe004, 0x1f08d).split('');
         const documentRange = new Range(0, editor.document.length);
         const selectionStart = editor.selectedRange.start;
@@ -6650,6 +6759,10 @@ class PHPFormatter {
         if (document.isClosed) return;
         if (document.isUntitled) return;
 
+        if (content == formatted.content) {
+            return false;
+        }
+
         this.formattedText.set(editor, formatted.content);
         editor.save();
     }
@@ -6766,12 +6879,9 @@ class PHPFormatter {
 
 var formatter = PHPFormatter;
 
-//const SingleProcess = require('./process.js');
-
-
 const compositeDisposable$1 = new CompositeDisposable();
-const { log: log$3 } = helpers;
 const serverInstance = new server('PHP CS Fixer');
+const { log: log$3, cleanDirectory: cleanDirectory$1 } = helpers;
 
 var activate = function () {
     const formater = new formatter(serverInstance);
@@ -6795,6 +6905,7 @@ var activate = function () {
 };
 
 var deactivate = function () {
+    cleanDirectory$1(nova.extension.workspaceStoragePath);
     compositeDisposable$1.dispose();
 };
 
