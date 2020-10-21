@@ -227,8 +227,8 @@ class PHPFormatter {
     }
 
     afterTextFormatted(text) {
-        //var re = /{\s\S*( +)\?>[\n\r]([\s\S]*?^<\?php)/gm;
-        let re = /{\s\S*( +)\?>[\n\r]+?(<[\S]+.*>[\s\S]*?^<[\/!].*>[\n\r]+?^<\?php)/gm;
+        //let re = /{\s\S*( +)\?>[\n\r]+?(<[\S]+.*>[\s\S]*?^<[\/!].*>[\n\r]+?^<\?php)/gm;
+        let re = /( +).*\?>[\n\r]+?(^<[\S]+.*>[\s\S]*?[\n\r]+?^<\?php)/gm;
         let m;
         do {
             m = re.exec(text);
