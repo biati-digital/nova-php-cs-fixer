@@ -22,11 +22,20 @@ _gaq.push(['_trackPageLoadTime']);
     ga.type = 'text/javascript';
     ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
 })();
-</script>        
+</script>
 <?php
     }
 }
 add_action('wp_footer', 'add_google_analytics');
+
+
+function head_favicons()
+{
+    $url = get_stylesheet_directory_uri() . '/static/favicons'; ?>
+<link rel="icon" type="image/png" href="<?php echo $url; ?>/favicon.png">
+<?php
+}
+add_action('wp_head', 'head_favicons', 11);
 ```
 
 Code after fix
@@ -52,26 +61,37 @@ function add_google_analytics()
     }
 }
 add_action('wp_footer', 'add_google_analytics');
+
+
+function head_favicons()
+{
+    $url = get_stylesheet_directory_uri() . '/static/favicons'; ?>
+    <link rel="icon" type="image/png" href="<?php echo $url; ?>/favicon.png">
+    <?php
+}
+add_action('wp_head', 'head_favicons', 11);
 ```
 
-
 ### Fix Inlined HTML fix id 2: example
+
 The formatters will respect the spaces you leave
 
 Code before fix
+
 ```php
 }?>
 ```
 
 Code after fix
+
 ```php
 } ?>
 ```
 
-
 ### Fix Inlined HTML no space between closing PHP tag and opening HTML Tag id 3: example ( this is not a problem with the formatters, if you leav a new line and your code it's correctly indented it will be respected, this is only if you have a file with really bad code)
 
 Code before fix
+
 ```php
 ?> <h5>
     <?php echo $title; ?>
@@ -83,6 +103,7 @@ Code before fix
 ```
 
 Code after fix
+
 ```php
 ?>
 <h5>
