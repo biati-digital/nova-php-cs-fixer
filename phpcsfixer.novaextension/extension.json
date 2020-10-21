@@ -43,6 +43,13 @@
           "default": true
         },
         {
+          "key": "biati.phpcsfixer.ignoreremote",
+          "title": "Ignore remote files",
+          "description": "Ignore format on save for remote files",
+          "type": "boolean",
+          "default": false
+        },
+        {
           "key": "biati.phpcsfixer.port",
           "title": "Fixer Dedicated server Port",
           "description": "If using a dedicated server to fix the files, you can adjust the server port here.",
