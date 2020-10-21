@@ -124,12 +124,14 @@ const options = {
     phppath: '',
     csfixerpath: '',
     onsave: '',
+    ignoreremote: '',
     port: '',
     server: '',
     log: '',
     rules: '',
     phpcsconfig: '',
     htmltry: '',
+    htmladditional: '',
     htmlrules: '',
 };
 
@@ -6337,7 +6339,8 @@ class PHPFormatter {
      * called on event "onWillSave"
      */
     async process(editor) {
-        if (!this.extensionConfig.onsave || nova.path.extname(editor.document.path) !== '.php') {
+        if (!this.extensionConfig.onsave || nova.path.extname(editor.document.path) !== '.php' || (this.extensionConfig.ignoreremote && editor.document.isRemote)) {
+            log$2("File not processed because the extension it's configured to not format on save or not format remote files");
             return;
         }
         await this.format(editor, true);
@@ -6382,7 +6385,9 @@ class PHPFormatter {
             return;
         }
 
-        formatted.content = this.afterTextFormatted(formatted.content);
+        if (this.extensionConfig.htmladditional) {
+            formatted.content = this.afterTextFormatted(formatted.content);
+        }
 
         await this.setFormattedValue({ editor, content, formatted, dosave });
     }
@@ -6842,6 +6847,12 @@ class PHPFormatter {
 
         return found;
     }
+
+    /*
+     * rescan workspace
+     * looking for local config file
+     */
+    rescanLocalCSConfig() {}
 
     /**
      * Convert a string

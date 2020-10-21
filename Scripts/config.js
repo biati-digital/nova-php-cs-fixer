@@ -2,12 +2,14 @@ const options = {
     phppath: '',
     csfixerpath: '',
     onsave: '',
+    ignoreremote: '',
     port: '',
     server: '',
     log: '',
     rules: '',
     phpcsconfig: '',
     htmltry: '',
+    htmladditional: '',
     htmlrules: '',
 };
 
