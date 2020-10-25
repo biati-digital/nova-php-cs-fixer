@@ -6,6 +6,7 @@
   "version": "1.0.1",
   "repository": "https://github.com/biati-digital/nova-php-cs-fixer",
   "bugs": "https://github.com/biati-digital/nova-php-cs-fixer/issues",
+  "funding": "https://www.paypal.com/paypalme/bdigital9816/0usd",
   "categories": ["formatters"],
   "main": "main.dist.js",
   "activationEvents": ["onLanguage:php"],
