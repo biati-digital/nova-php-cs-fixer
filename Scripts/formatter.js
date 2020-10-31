@@ -27,7 +27,7 @@ class PHPFormatter {
      * Format
      * start the format process
      */
-    async format(editor, dosave = true) {
+    async format(editor) {
         const uri = editor.document.uri;
         const filePath = editor.document.path;
         const fileName = nova.path.basename(filePath);
@@ -66,7 +66,7 @@ class PHPFormatter {
             formatted.content = this.afterTextFormatted(formatted.content);
         }
 
-        await this.setFormattedValue({ editor, content, formatted, dosave });
+        await this.setFormattedValue({ editor, content, formatted });
     }
 
     /*
@@ -301,7 +301,7 @@ class PHPFormatter {
      * https://github.com/alexanderweiss/nova-prettier
      *
      */
-    async setFormattedValue({ editor, content, formatted, dosave }) {
+    async setFormattedValue({ editor, content, formatted }) {
         // No need to update if the content and the
         // formatted content are the same
         if (content == formatted.content) {
@@ -320,9 +320,6 @@ class PHPFormatter {
             editor.edit((e) => {
                 e.replace(documentRange, formatted.content);
             });
-            if (dosave) {
-                this.ensureSaved(editor, content, formatted);
-            }
             return;
         }
 
@@ -338,6 +335,9 @@ class PHPFormatter {
         const editPromise = editor.edit((e) => {
             let offset = 0;
             let toRemove = 0;
+
+            // Add an extra empty edit so any trailing delete is actually run.
+            edits.push([diff.EQUAL, '']);
 
             for (const [edit, str] of edits) {
                 if (edit === diff.DELETE) {
@@ -369,9 +369,6 @@ class PHPFormatter {
         editPromise
             .then(() => {
                 editor.selectedRanges = [new Range(newSelectionStart, newSelectionEnd)];
-                if (dosave) {
-                    this.ensureSaved(editor, content, formatted);
-                }
             })
             .catch((err) => console.error(err));
     }
@@ -432,6 +429,7 @@ class PHPFormatter {
 
     /*
      * Ensure the file is saved
+     * deprecated, Nova fixed the error in v2
      *
      * @return void
      */
@@ -445,7 +443,6 @@ class PHPFormatter {
         if (content == formatted.content) {
             return false;
         }
-
         this.formattedText.set(editor, formatted.content);
         editor.save();
     }

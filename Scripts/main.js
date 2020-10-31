@@ -11,7 +11,8 @@ exports.activate = function () {
     nova.commands.register(nova.extension.identifier + '.format', (editor) => {
         return formater.format(editor, false);
     });
-    nova.workspace.onDidAddTextEditor((editor) => {
+
+    nova.workspace.onDidAddTextEditor(async (editor) => {
         return editor.onWillSave(formater.process.bind(formater));
     });
 
