@@ -1,3 +1,7 @@
+## Version 1.0.3
+
+- Removed hack to autosave the file when formatting is done, Requires Nova v2 as it includes a fix for this so the hack is no longer necessary
+
 ## Version 1.0.2
 
 - Updated: Added more HTML additional fixes
