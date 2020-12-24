@@ -163,7 +163,7 @@
                 },
                 {
                     "key": "biati.phpcsfixer.bladerules",
-                    "title": "Twig Formatter Rules",
+                    "title": "Blade Formatter Rules",
                     "description": "Any additional rules you want to apply when formatting Blade. (one per line)",
                     "link": "https://github.com/biati-digital/nova-php-cs-fixer/blob/main/blade-options.md",
                     "type": "text",
@@ -321,7 +321,7 @@
                 },
                 {
                     "key": "biati.phpcsfixer.bladerules",
-                    "title": "Twig Formatter Rules",
+                    "title": "Blade Formatter Rules",
                     "description": "Any additional rules you want to apply when formatting Blade. (one per line)",
                     "link": "https://github.com/biati-digital/nova-php-cs-fixer/blob/main/blade-options.md",
                     "type": "text",
