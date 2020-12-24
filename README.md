@@ -59,14 +59,14 @@ array_indentation: true
 
 - **Format HTML in PHP files** Enable or disable formatting of HTML inside the PHP files.
 
-- **Apply Additional fixes** Addition HTML fixes, more info here [aditional-fixes.md](aditional-fixes.md)
+- **Apply Additional fixes** Addition HTML fixes, more info here [aditional-fixes.md](https://github.com/biati-digital/nova-php-cs-fixer/blob/main/aditional-fixes.md)
 
 - **Use Tabs** Set to true to use tabs or leave unchecked to use spaces
 
 - **Tab Width** Specify the number of spaces per indentation level
 
 - **HTML Rules** Add the rules you want to use to format your HTML, here's an example of the available options:  
-**Note: Please read and make sure you understand the options otherwise do not move anything here, check all the available options here [html-options.md](html-options.md)**
+**Note: Please read and make sure you understand the options otherwise do not move anything here, check all the available options here [html-options.md](https://github.com/biati-digital/nova-php-cs-fixer/blob/main/html-options.md)**
 
 ```
 max_preserve_newlines: 10
@@ -100,7 +100,7 @@ indent_scripts: "keep"
 
 - **Tab Width** Specify the number of spaces per indentation level
 
-- **Twig Rules** Add the rules you want to use to format your Twig file, for more information about the options see **[twig-options.md](twig-options.md)**
+- **Twig Rules** Add the rules you want to use to format your Twig file, for more information about the options see **[twig-options.md](https://github.com/biati-digital/nova-php-cs-fixer/blob/main/twig-options.md)**
 
 ```
 preserve: 3
