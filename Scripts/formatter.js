@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 const beautifyHtml = require('js-beautify').html;
 const diff = require('fast-diff');
 const extensionConfig = require('./config.js');
@@ -16,10 +18,30 @@ class PHPFormatter {
      * called on event "onWillSave"
      */
     async process(editor) {
-        if (!this.extensionConfig.onsave || nova.path.extname(editor.document.path) !== '.php' || (this.extensionConfig.ignoreremote && editor.document.isRemote)) {
+        if (!this.extensionConfig.onsave || (this.extensionConfig.ignoreremote && editor.document.isRemote)) {
             log("File not processed because the extension it's configured to not format on save or not format remote files");
             return;
         }
+
+        const filePath = editor.document.path;
+        const fileName = nova.path.basename(filePath.toLowerCase());
+        const allowedExtensions = {
+            php: true,
+            blade: this.extensionConfig.blade,
+            twig: this.extensionConfig.twig
+        };
+
+        let extension = nova.path.extname(editor.document.path).substring(1);
+
+        if (fileName.endsWith('.blade.php')) {
+            extension = 'blade';
+        }
+
+        if (!allowedExtensions.hasOwnProperty(extension) || !allowedExtensions[extension]) {
+            log(`File not processed because the extension it's configured to not format on save files with extension ${extension}`);
+            return;
+        }
+
         await this.format(editor, true);
     }
 
@@ -28,9 +50,9 @@ class PHPFormatter {
      * start the format process
      */
     async format(editor) {
-        const uri = editor.document.uri;
         const filePath = editor.document.path;
-        const fileName = nova.path.basename(filePath);
+        const fileName = nova.path.basename(filePath.toLowerCase());
+        const extension = nova.path.extname(fileName).substring(1);
         const documentRange = new Range(0, editor.document.length);
         const content = editor.getTextInRange(documentRange);
         const shouldProcess = this.shouldProcess(editor, content);
@@ -40,9 +62,27 @@ class PHPFormatter {
         }
 
         let text = content;
+        let formatted = false;
+
+        if (fileName.endsWith('.blade.php')) {
+            formatted = this.formatBlade(text);
+            await this.setFormattedValue({ editor, content, formatted });
+            return true;
+        }
+
+        if (extension == 'twig') {
+            formatted = this.formatTwig(text);
+            await this.setFormattedValue({ editor, content, formatted });
+            return true;
+        }
 
         if (this.extensionConfig.htmltry) {
             text = this.formatHTML(text);
+            formatted = text;
+            if (extension == 'html') {
+                await this.setFormattedValue({ editor, content, formatted });
+                return true;
+            }
         }
 
         //text = this.prePHPClenup(text);
@@ -50,7 +90,6 @@ class PHPFormatter {
         const tmpFile = await this.tmpFile(filePath, text);
         const command = await this.getCommand(tmpFile);
 
-        let formatted = false;
         if (this.extensionConfig.server) {
             formatted = await this.formatOnServer(command, tmpFile);
         } else {
@@ -92,8 +131,8 @@ class PHPFormatter {
             body: JSON.stringify({
                 file: filePath,
                 cmd: cmd,
-                config: this.extensionConfig,
-            }),
+                config: this.extensionConfig
+            })
         });
 
         if (!rawResponse.ok) {
@@ -135,7 +174,7 @@ class PHPFormatter {
             const stdOut = [];
             const stdErr = [];
             const process = new Process('/usr/bin/env', {
-                args: cmd,
+                args: cmd
             });
 
             log('Calling PHP Formatting using a process');
@@ -183,17 +222,22 @@ class PHPFormatter {
      * @param string
      * @return string
      */
-    formatHTML(text) {
+    formatHTML(text, formatRules = false) {
+        if (!formatRules) {
+            formatRules = this.stringToObject(this.extensionConfig.htmlrules);
+        }
+
         const HTMLConfig = Object.assign(
             {
-                indent_size: 4,
+                indent_size: this.extensionConfig.htmlTabWidth,
+                indent_with_tabs: this.extensionConfig.htmlUseTabs,
                 preserve_newlines: true,
                 indent_scripts: 'keep',
                 indent_with_tabs: false,
-                max_preserve_newlines: 10,
-                content_unformatted: ['pre', 'code'],
+                max_preserve_newlines: 3,
+                content_unformatted: ['pre', 'code']
             },
-            this.stringToObject(this.extensionConfig.htmlrules)
+            formatRules
         );
 
         HTMLConfig.end_with_newline = false;
@@ -206,6 +250,132 @@ class PHPFormatter {
         log(`HTML in PHP formatted in ${elapsedTime}ms`);
 
         return text;
+    }
+
+    /*
+     * Format Blade
+     * format using js-beautify
+     * https://gist.github.com/brnmonteiro/3660b71dbc68691cdc8ac41cec379e2f
+     * https://gist.github.com/mpryvkin/0c46e2493b450f92492e8e9a46ad5d97
+     * https://gist.github.com/maliouris/f84b7f3dcb2a71455e693716e76ce302
+     *
+     * @param string
+     * @return string
+     */
+    formatBlade(text) {
+        let html = text;
+        html = html.replace(/\{\{((?:(?!\}\}).)+)\}\}/g, function (m, c) {
+            if (c) {
+                c = c.replace(/(^[ \t]*|[ \t]*$)/g, '');
+                c = c.replace(/'/g, '&#39;');
+                c = c.replace(/"/g, '&#34;');
+                c = encodeURIComponent(c);
+            }
+            return '{{' + c + '}}';
+        });
+
+        html = html.replace(/^[ \t]*@([a-z]+)([^\r\n]*)$/gim, function (m, d, c) {
+            if (c) {
+                c = c.replace(/'/g, '&#39;');
+                c = c.replace(/"/g, '&#34;');
+                c = '|' + encodeURIComponent(c);
+            }
+            switch (d) {
+                case 'break':
+                case 'continue':
+                case 'empty':
+                case 'else':
+                case 'elseif':
+                case 'extends':
+                case 'case':
+                case 'csrf':
+                case 'include':
+                case 'json':
+                case 'method':
+                case 'parent':
+                case 'stack':
+                case 'yield':
+                    return '<blade ' + d + c + '/>';
+                    break;
+                default:
+                    if (d.startsWith('end')) {
+                        return '</blade ' + d + c + '>';
+                    } else {
+                        return '<blade ' + d + c + '>';
+                    }
+                    break;
+            }
+        });
+
+        let bladeFormatRules = this.stringToObject(this.extensionConfig.bladerules);
+        bladeFormatRules.indent_size = this.extensionConfig.bladeTabWidth;
+        bladeFormatRules.indent_with_tabs = this.extensionConfig.bladeUseTabs;
+
+        html = this.formatHTML(html, bladeFormatRules);
+
+        html = html.replace(/^([ \t]*)<\/?blade ([a-z]+)\|?([^>\/]+)?\/?>$/gim, function (m, s, d, c) {
+            if (c) {
+                c = decodeURIComponent(c);
+                c = c.replace(/&#39;/g, "'");
+                c = c.replace(/&#34;/g, '"');
+                c = c.replace(/^[ \t]*/g, '');
+            } else {
+                c = '';
+            }
+            if (!s) {
+                s = '';
+            }
+            return s + '@' + d + c;
+        });
+        html = html.replace(/\{\{((?:(?!\}\}).)+)\}\}/g, function (m, c) {
+            if (c) {
+                c = decodeURIComponent(c);
+                c = c.replace(/&#39;/g, "'");
+                c = c.replace(/&#34;/g, '"');
+                c = c.replace(/(^[ \t]*|[ \t]*$)/g, ' ');
+            }
+            return '{{' + c + '}}';
+        });
+
+        return html;
+    }
+
+    /*
+     * Format Twig
+     * format using prettydiff
+     * https://github.com/prettydiff/prettydiff
+     *
+     * @param string
+     * @return string
+     */
+    formatTwig(text) {
+        let source = text;
+        let output = '',
+            prettydiff = require('prettydiff'),
+            options = prettydiff.options;
+        options.mode = 'beautify';
+        options.language = 'twig';
+        options.preserve = 3;
+        options.source = source;
+
+        let tabSize = this.extensionConfig.twigTabWidth;
+        let indentChar = ' ';
+
+        if (this.extensionConfig.twigUseTabs) {
+            tabSize = 0;
+            indentChar = '\t';
+        }
+
+        options.indent_char = indentChar;
+        options.indent_size = tabSize;
+
+        output = prettydiff();
+
+        if (!output) {
+            return text;
+        }
+
+        return output;
     }
 
     /*
@@ -302,37 +472,55 @@ class PHPFormatter {
      *
      */
     async setFormattedValue({ editor, content, formatted }) {
+        let formattedText = '';
+        if (typeof formatted == 'string') {
+            formattedText = formatted;
+        } else {
+            formattedText = formatted.content;
+        }
+
         // No need to update if the content and the
         // formatted content are the same
-        if (content == formatted.content) {
+        if (content == formattedText) {
             log('Nothing changed so the content will not be updated');
             return false;
         }
 
-        const POSSIBLE_CURSORS = String.fromCharCode(0xfffd, 0xffff, 0x1f094, 0x1f08d, 0xe004, 0x1f08d).split('');
-        const documentRange = new Range(0, editor.document.length);
-        const selectionStart = editor.selectedRange.start;
-        const selectionEnd = editor.selectedRange.end;
-        const cursorOffset = selectionEnd;
-        const cursor = POSSIBLE_CURSORS.find((cursor) => !content.includes(cursor) && !formatted.content.includes(cursor));
+        const [cursor, edits] = this.diff(content, formattedText, editor.selectedRanges);
 
-        if (!cursor) {
-            editor.edit((e) => {
-                e.replace(documentRange, formatted.content);
-            });
-            return;
+        if (edits) {
+            return this.applyDiff(editor, cursor, edits);
         }
 
-        // Insert the cursors
-        const textWithCursor = content.slice(0, selectionStart) + cursor + content.slice(selectionStart, selectionEnd) + cursor + content.slice(selectionEnd);
+        return this.replace(editor, formattedText);
+    }
+
+    diff(original, formatted, selectedRanges) {
+        // Find a cursor that does not occur in this document
+        const POSSIBLE_CURSORS = String.fromCharCode(0xfffd, 0xffff, 0x1f094, 0x1f08d, 0xe004, 0x1f08d).split('');
+        const cursor = POSSIBLE_CURSORS.find((cursor) => !original.includes(cursor) && !formatted.includes(cursor));
+
+        if (!cursor) {
+            return null;
+        }
+
+        let originalWithCursors = '';
+        let lastEnd = 0;
+
+        for (const selection of selectedRanges) {
+            originalWithCursors += original.slice(lastEnd, selection.start) + cursor + original.slice(selection.start, selection.end) + cursor;
+            lastEnd = selection.end;
+        }
+
+        originalWithCursors += original.slice(lastEnd);
 
         // Diff
-        const edits = diff(textWithCursor, formatted.content);
+        return [cursor, diff(originalWithCursors, formatted)];
+    }
 
-        let newSelectionStart;
-        let newSelectionEnd;
-
-        const editPromise = editor.edit((e) => {
+    async applyDiff(editor, cursor, edits) {
+        const selections = [];
+        await editor.edit((e) => {
             let offset = 0;
             let toRemove = 0;
 
@@ -347,8 +535,16 @@ class PHPFormatter {
                     let cursorIndex = -1;
                     while (true) {
                         cursorIndex = str.indexOf(cursor, cursorIndex + 1);
-                        if (cursorIndex === -1) break;
-                        newSelectionStart ? (newSelectionEnd = offset) : (newSelectionStart = offset);
+                        if (cursorIndex === -1) {
+                            break;
+                        }
+
+                        const lastSelection = selections[selections.length - 1];
+                        if (!lastSelection || lastSelection[1]) {
+                            selections[selections.length] = [offset];
+                        } else {
+                            lastSelection[1] = offset;
+                        }
                         toRemove -= cursor.length;
                     }
 
@@ -366,11 +562,21 @@ class PHPFormatter {
             }
         });
 
-        editPromise
-            .then(() => {
-                editor.selectedRanges = [new Range(newSelectionStart, newSelectionEnd)];
-            })
-            .catch((err) => console.error(err));
+        editor.selectedRanges = selections.map((s) => new Range(s[0], s[1]));
+        //editor.scrollToCursorPosition();
+    }
+
+    async replace(editor, formatted) {
+        const { document } = editor;
+
+        const cursorPosition = editor.selectedRange.end;
+        const documentRange = new Range(0, document.length);
+
+        await editor.edit((e) => {
+            e.replace(documentRange, formatted);
+        });
+
+        editor.selectedRanges = [new Range(cursorPosition, cursorPosition)];
     }
 
     /*
@@ -425,26 +631,6 @@ class PHPFormatter {
         log(cmd.join(' '));
 
         return cmd;
-    }
-
-    /*
-     * Ensure the file is saved
-     * deprecated, Nova fixed the error in v2
-     *
-     * @return void
-     */
-    async ensureSaved(editor, content, formatted) {
-        const { document } = editor;
-
-        if (!document.isDirty) return;
-        if (document.isClosed) return;
-        if (document.isUntitled) return;
-
-        if (content == formatted.content) {
-            return false;
-        }
-        this.formattedText.set(editor, formatted.content);
-        editor.save();
     }
 
     /*
@@ -540,6 +726,11 @@ class PHPFormatter {
 
         rulesLines.forEach((ruleLine) => {
             ruleLine = ruleLine.trim();
+
+            if (ruleLine == '{' || ruleLine == '}') {
+                return;
+            }
+
             let ruleName = ruleLine.substring(0, ruleLine.indexOf(':')).trim();
             let ruleValue = ruleLine.substring(ruleLine.indexOf(':') + 1).trim();
 
@@ -553,6 +744,9 @@ class PHPFormatter {
             } else if (ruleValue.includes('{') && ruleValue.includes('}')) {
                 ruleValue = JSON.parse(ruleValue);
             }
+
+            ruleName = ruleName.replace(/"/g, '');
+            ruleName = ruleName.replace(/'/g, '');
 
             ruleValue = ruleValue == 'true' ? true : ruleValue;
             ruleValue = ruleValue == 'false' ? false : ruleValue;
