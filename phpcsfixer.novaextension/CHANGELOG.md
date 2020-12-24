@@ -1,3 +1,10 @@
+## Version 2.0.0
+
+- New: Added support for blade files
+- New: Added support for twig files
+- New: Added support for workspace configuration
+- Code updates
+
 ## Version 1.0.3
 
 - Removed hack to autosave the file when formatting is done, Requires Nova v2 as it includes a fix for this so the hack is no longer necessary
