@@ -1,131 +1,379 @@
 {
-  "identifier": "biati.phpcsfixer",
-  "name": "PHP CS Fixer",
-  "organization": "biati",
-  "description": "Automatically format PHP files on save using php-cs-fixer with HTML support.",
-  "version": "1.0.3",
-  "repository": "https://github.com/biati-digital/nova-php-cs-fixer",
-  "bugs": "https://github.com/biati-digital/nova-php-cs-fixer/issues",
-  "funding": "https://www.paypal.com/paypalme/bdigital9816/0usd",
-  "categories": ["formatters"],
-  "main": "main.dist.js",
-  "activationEvents": ["onLanguage:php"],
-  "entitlements": {
-    "filesystem": "readwrite",
-    "process": true,
-    "requests": true
-  },
-  "config": [
-    {
-      "title": "PHP CS Fixer Configuration",
-      "description": "Handle php-cs-fixer configuration",
-      "link": "https://mlocati.github.io/php-cs-fixer-configurator/",
-      "type": "section",
-      "children": [
-        {
-          "key": "biati.phpcsfixer.phppath",
-          "title": "PHP path",
-          "description": "path to your PHP installation, leave empty to use the default OS PHP installation.",
-          "type": "string",
-          "placeholder": "php"
-        },
-        {
-          "key": "biati.phpcsfixer.csfixerpath",
-          "title": "PHP CS Fixer path",
-          "description": "path to your fixer executable, if empty the fixer included with the extension will be used.",
-          "type": "path",
-          "default": ""
-        },
-        {
-          "key": "biati.phpcsfixer.onsave",
-          "title": "Format on save",
-          "description": "Enable to automatically format on file save",
-          "type": "boolean",
-          "default": true
-        },
-        {
-          "key": "biati.phpcsfixer.ignoreremote",
-          "title": "Ignore remote files",
-          "description": "Ignore format on save for remote files",
-          "type": "boolean",
-          "default": false
-        },
-        {
-          "key": "biati.phpcsfixer.port",
-          "title": "Fixer Dedicated server Port",
-          "description": "If using a dedicated server to fix the files, you can adjust the server port here.",
-          "type": "number",
-          "min": 2000,
-          "max": 9000,
-          "default": 8631
-        },
-        {
-          "key": "biati.phpcsfixer.server",
-          "title": "PHP dedicated server",
-          "description": "Starting PHP can be a little slow, having a small server will speed up formatting",
-          "type": "boolean",
-          "default": true
-        },
-        {
-          "key": "biati.phpcsfixer.log",
-          "title": "Show logs",
-          "description": "Only for debug and in case the extenstion does not work correctly",
-          "type": "boolean",
-          "default": false
-        },
-        {
-          "key": "biati.phpcsfixer.rules",
-          "title": "Fixer Rules",
-          "description": "Define the rules you want to apply, please read the docs for more information.",
-          "type": "text",
-          "default": "@PSR2"
-        },
-        {
-          "key": "biati.phpcsfixer.phpcsconfig",
-          "title": "Global config path",
-          "description": "Instead of defining rules you can use a global .php_cs file for all the projects, if you add a .php_cs in the root of your project it will be used instead of the global configuration. The rules above will be ignored if the configuration file is used.",
-          "type": "path",
-          "default": ""
-        }
-      ]
+    "identifier": "biati.phpcsfixer",
+    "name": "PHP CS Fixer",
+    "organization": "biati",
+    "description": "Automatically format PHP files using php-cs-fixer with HTML, Blade and Twig support.",
+    "version": "2.0.0",
+    "repository": "https://github.com/biati-digital/nova-php-cs-fixer",
+    "bugs": "https://github.com/biati-digital/nova-php-cs-fixer/issues",
+    "funding": "https://www.paypal.com/paypalme/bdigital9816/0usd",
+    "categories": ["formatters"],
+    "main": "main.dist.js",
+    "activationEvents": ["onLanguage:php", "onLanguage:twig"],
+    "entitlements": {
+        "filesystem": "readwrite",
+        "process": true,
+        "requests": true
     },
-    {
-      "title": "HTML Configuration",
-      "description": "HTML configuration",
-      "type": "section",
-      "children": [
+    "config": [
         {
-          "key": "biati.phpcsfixer.htmltry",
-          "title": "Format HTML in PHP files",
-          "description": "Enable this box to try to fix HTML in PHP files",
-          "type": "boolean",
-          "default": true
+            "title": "PHP CS Fixer Configuration",
+            "description": "Handle php-cs-fixer configuration",
+            "link": "https://mlocati.github.io/php-cs-fixer-configurator/",
+            "type": "section",
+            "children": [
+                {
+                    "key": "biati.phpcsfixer.phppath",
+                    "title": "PHP path",
+                    "description": "path to your PHP installation, leave empty to use the default OS PHP installation.",
+                    "type": "string",
+                    "placeholder": "php"
+                },
+                {
+                    "key": "biati.phpcsfixer.csfixerpath",
+                    "title": "PHP CS Fixer path",
+                    "description": "path to your fixer executable, if empty the fixer included with the extension will be used.",
+                    "type": "path",
+                    "default": ""
+                },
+                {
+                    "key": "biati.phpcsfixer.onsave",
+                    "title": "Format on save",
+                    "description": "Enable to automatically format on file save",
+                    "type": "boolean",
+                    "default": true
+                },
+                {
+                    "key": "biati.phpcsfixer.ignoreremote",
+                    "title": "Ignore remote files",
+                    "description": "Ignore format on save for remote files",
+                    "type": "boolean",
+                    "default": false
+                },
+                {
+                    "key": "biati.phpcsfixer.port",
+                    "title": "Fixer Dedicated server Port",
+                    "description": "If using a dedicated server to fix the files, you can adjust the server port here.",
+                    "type": "number",
+                    "min": 2000,
+                    "max": 9000,
+                    "default": 8631
+                },
+                {
+                    "key": "biati.phpcsfixer.server",
+                    "title": "PHP dedicated server",
+                    "description": "Starting PHP can be a little slow, having a small server will speed up formatting",
+                    "type": "boolean",
+                    "default": true
+                },
+                {
+                    "key": "biati.phpcsfixer.log",
+                    "title": "Show logs",
+                    "description": "Only for debug and in case the extenstion does not work correctly",
+                    "type": "boolean",
+                    "default": false
+                },
+                {
+                    "key": "biati.phpcsfixer.rules",
+                    "title": "Fixer Rules",
+                    "description": "Define the rules you want to apply, please read the docs for more information.",
+                    "type": "text",
+                    "default": "@PSR2"
+                },
+                {
+                    "key": "biati.phpcsfixer.phpcsconfig",
+                    "title": "Global config path",
+                    "description": "Instead of defining rules you can use a global .php_cs file for all the projects, if you add a .php_cs in the root of your project it will be used instead of the global configuration. The rules above will be ignored if the configuration file is used.",
+                    "type": "path",
+                    "default": ""
+                }
+            ]
         },
         {
-          "key": "biati.phpcsfixer.htmladditional",
-          "title": "Apply Additional fixes",
-          "description": "Enable this box to apply aditional fixes to HTML/PHP files",
-          "link": "https://github.com/biati-digital/nova-php-cs-fixer/blob/main/aditional-fixes.md",
-          "type": "boolean",
-          "default": false
+            "title": "HTML Configuration",
+            "description": "HTML configuration",
+            "type": "section",
+            "children": [
+                {
+                    "key": "biati.phpcsfixer.htmltry",
+                    "title": "Format HTML in PHP files",
+                    "description": "Enable this box to try to fix HTML in PHP files",
+                    "type": "boolean",
+                    "default": true
+                },
+                {
+                    "key": "biati.phpcsfixer.htmladditional",
+                    "title": "Apply Additional fixes",
+                    "description": "Enable this box to apply aditional fixes to HTML/PHP files",
+                    "link": "https://github.com/biati-digital/nova-php-cs-fixer/blob/main/aditional-fixes.md",
+                    "type": "boolean",
+                    "default": false
+                },
+                {
+                    "key": "biati.phpcsfixer.htmlUseTabs",
+                    "title": "Use tabs",
+                    "description": "Indent lines with tabs instead of spaces.",
+                    "type": "boolean",
+                    "default": false
+                },
+                {
+                    "key": "biati.phpcsfixer.htmlTabWidth",
+                    "title": "Tab width",
+                    "description": "Specify the number of spaces per indentation-level.",
+                    "type": "number",
+                    "default": 4,
+                    "min": 0
+                },
+                {
+                    "key": "biati.phpcsfixer.htmlrules",
+                    "title": "HTML Rules",
+                    "description": "Additional rules you want to apply when formatting HTML. (one per line)",
+                    "link": "https://github.com/biati-digital/nova-php-cs-fixer/blob/main/html-options.md",
+                    "type": "text",
+                    "default": "preserve_newlines: true"
+                }
+            ]
         },
         {
-          "key": "biati.phpcsfixer.htmlrules",
-          "title": "HTML Rules",
-          "description": "Define the rules you want to apply when formatting HTML. (one per line)",
-          "type": "text",
-          "default": "preserve_newlines: true"
+            "title": "Blade Configuration",
+            "description": "Blade configuration",
+            "type": "section",
+            "children": [
+                {
+                    "key": "biati.phpcsfixer.blade",
+                    "title": "Format Blade files on save",
+                    "description": "Enable this box to format Blade files on save",
+                    "type": "boolean",
+                    "default": true
+                },
+                {
+                    "key": "biati.phpcsfixer.bladeUseTabs",
+                    "title": "Use tabs",
+                    "description": "Indent lines with tabs instead of spaces.",
+                    "type": "boolean",
+                    "default": false
+                },
+                {
+                    "key": "biati.phpcsfixer.bladeTabWidth",
+                    "title": "Tab width",
+                    "description": "Specify the number of spaces per indentation-level.",
+                    "type": "number",
+                    "default": 4,
+                    "min": 0
+                },
+                {
+                    "key": "biati.phpcsfixer.bladerules",
+                    "title": "Twig Formatter Rules",
+                    "description": "Any additional rules you want to apply when formatting Blade. (one per line)",
+                    "link": "https://github.com/biati-digital/nova-php-cs-fixer/blob/main/blade-options.md",
+                    "type": "text",
+                    "default": "preserve_newlines: true"
+                }
+            ]
+        },
+        {
+            "title": "Twig Configuration",
+            "description": "Twig configuration",
+            "type": "section",
+            "children": [
+                {
+                    "key": "biati.phpcsfixer.twig",
+                    "title": "Format Twig files on save",
+                    "description": "Enable this box to format Twig files on save",
+                    "type": "boolean",
+                    "default": true
+                },
+                {
+                    "key": "biati.phpcsfixer.twigUseTabs",
+                    "title": "Use tabs",
+                    "description": "Indent lines with tabs instead of spaces.",
+                    "type": "boolean",
+                    "default": false
+                },
+                {
+                    "key": "biati.phpcsfixer.twigTabWidth",
+                    "title": "Tab width",
+                    "description": "Specify the number of spaces per indentation-level.",
+                    "type": "number",
+                    "default": 4,
+                    "min": 0
+                },
+                {
+                    "key": "biati.phpcsfixer.twigrules",
+                    "title": "Twig Formatter Rules",
+                    "description": "Any additional rules you want to apply when formatting Twig. (one per line)",
+                    "link": "https://github.com/biati-digital/nova-php-cs-fixer/blob/main/twig-options.md",
+                    "type": "text",
+                    "default": "new_line: true"
+                }
+            ]
         }
-      ]
+    ],
+    "config-workspace": [
+        {
+            "key": "biati.phpcsfixer.workspaceconfigenable",
+            "title": "Enable workspace configuration",
+            "description": "Enable to use the following configuration for this workspace instead of the global options.",
+            "type": "enum",
+            "default": "disable",
+            "values": ["disable", "enable"]
+        },
+        {
+            "title": "PHP CS Fixer Configuration",
+            "description": "Handle php-cs-fixer configuration",
+            "link": "https://mlocati.github.io/php-cs-fixer-configurator/",
+            "type": "section",
+            "children": [
+                {
+                    "key": "biati.phpcsfixer.onsave",
+                    "title": "Format on save",
+                    "description": "Enable to automatically format on file save",
+                    "type": "boolean",
+                    "default": true
+                },
+                {
+                    "key": "biati.phpcsfixer.rules",
+                    "title": "Fixer Rules",
+                    "description": "Define the rules you want to apply, please read the docs for more information.",
+                    "type": "text",
+                    "default": ""
+                },
+                {
+                    "key": "biati.phpcsfixer.phpcsconfig",
+                    "title": "Config path",
+                    "description": "Instead of defining rules you can use a .php_cs file for all the project, if you add a .php_cs in the root of your project it will be used instead of the global configuration. The rules above will be ignored if the configuration file is used.",
+                    "type": "path",
+                    "default": ""
+                }
+            ]
+        },
+        {
+            "title": "HTML Configuration",
+            "description": "HTML configuration",
+            "type": "section",
+            "children": [
+                {
+                    "key": "biati.phpcsfixer.htmltry",
+                    "title": "Format HTML in PHP files",
+                    "description": "Enable this box to try to fix HTML in PHP files",
+                    "type": "boolean",
+                    "default": true
+                },
+                {
+                    "key": "biati.phpcsfixer.htmladditional",
+                    "title": "Apply Additional fixes",
+                    "description": "Enable this box to apply aditional fixes to HTML/PHP files",
+                    "link": "https://github.com/biati-digital/nova-php-cs-fixer/blob/main/aditional-fixes.md",
+                    "type": "boolean",
+                    "default": false
+                },
+                {
+                    "key": "biati.phpcsfixer.htmlUseTabs",
+                    "title": "Use tabs",
+                    "description": "Indent lines with tabs instead of spaces.",
+                    "type": "boolean",
+                    "default": false
+                },
+                {
+                    "key": "biati.phpcsfixer.htmlTabWidth",
+                    "title": "Tab width",
+                    "description": "Specify the number of spaces per indentation-level.",
+                    "type": "number",
+                    "default": 4,
+                    "min": 0
+                },
+                {
+                    "key": "biati.phpcsfixer.htmlrules",
+                    "title": "HTML Rules",
+                    "description": "Additional rules you want to apply when formatting HTML. (one per line)",
+                    "link": "https://github.com/biati-digital/nova-php-cs-fixer/blob/main/html-options.md",
+                    "type": "text",
+                    "default": ""
+                }
+            ]
+        },
+        {
+            "title": "Blade Configuration",
+            "description": "Blade configuration",
+            "type": "section",
+            "children": [
+                {
+                    "key": "biati.phpcsfixer.blade",
+                    "title": "Format Blade files on save",
+                    "description": "Enable this box to format Blade files on save",
+                    "type": "boolean",
+                    "default": true
+                },
+                {
+                    "key": "biati.phpcsfixer.bladeUseTabs",
+                    "title": "Use tabs",
+                    "description": "Indent lines with tabs instead of spaces.",
+                    "type": "boolean",
+                    "default": false
+                },
+                {
+                    "key": "biati.phpcsfixer.bladeTabWidth",
+                    "title": "Tab width",
+                    "description": "Specify the number of spaces per indentation-level.",
+                    "type": "number",
+                    "default": 4,
+                    "min": 0
+                },
+                {
+                    "key": "biati.phpcsfixer.bladerules",
+                    "title": "Twig Formatter Rules",
+                    "description": "Any additional rules you want to apply when formatting Blade. (one per line)",
+                    "link": "https://github.com/biati-digital/nova-php-cs-fixer/blob/main/blade-options.md",
+                    "type": "text",
+                    "default": ""
+                }
+            ]
+        },
+        {
+            "title": "Twig Configuration",
+            "description": "Twig configuration",
+            "type": "section",
+            "children": [
+                {
+                    "key": "biati.phpcsfixer.twig",
+                    "title": "Format Twig files on save",
+                    "description": "Enable this box to format Twig files on save",
+                    "type": "boolean",
+                    "default": true
+                },
+                {
+                    "key": "biati.phpcsfixer.twigUseTabs",
+                    "title": "Use tabs",
+                    "description": "Indent lines with tabs instead of spaces.",
+                    "type": "boolean",
+                    "default": false
+                },
+                {
+                    "key": "biati.phpcsfixer.twigTabWidth",
+                    "title": "Tab width",
+                    "description": "Specify the number of spaces per indentation-level.",
+                    "type": "number",
+                    "default": 4,
+                    "min": 0
+                },
+                {
+                    "key": "biati.phpcsfixer.twigrules",
+                    "title": "Twig Formatter Rules",
+                    "description": "Any additional rules you want to apply when formatting Twig. (one per line)",
+                    "link": "https://github.com/biati-digital/nova-php-cs-fixer/blob/main/twig-options.md",
+                    "type": "text",
+                    "default": ""
+                }
+            ]
+        }
+    ],
+    "commands": {
+        "editor": [
+            {
+                "title": "Format with PHP-CS-Fixer",
+                "command": "biati.phpcsfixer.format",
+                "shortcut": "option-shift-f"
+            }
+        ]
     }
-  ],
-  "commands": {
-    "editor": [
-      {
-        "title": "Format with PHP-CS-Fixer",
-        "command": "biati.phpcsfixer.format",
-        "shortcut": "option-shift-f"
-      }
-    ]
-  }
 }
