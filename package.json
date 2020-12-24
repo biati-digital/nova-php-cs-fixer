@@ -1,32 +1,33 @@
 {
-  "name": "biati.phpcsfixer",
-  "version": "1.0.3",
-  "description": "PHP CS Fixer formatter",
-  "main": "main.js",
-  "scripts": {
-    "build": "npx rollup -c",
-    "watch": "onchange -i \"Scripts/**/*.js\" -- npm run build"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/alexanderweiss/nova-prettier.git"
-  },
-  "author": "biati",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/alexanderweiss/nova-prettier/issues"
-  },
-  "homepage": "https://github.com/alexanderweiss/nova-prettier#readme",
-  "dependencies": {
-    "esprima-fb": "^15001.1001.0-dev-harmony-fb",
-    "fast-diff": "^1.2.0",
-    "js-beautify": "^1.13.0"
-  },
-  "devDependencies": {
-    "@rollup/plugin-commonjs": "^13.0.0",
-    "@rollup/plugin-json": "^4.1.0",
-    "@rollup/plugin-node-resolve": "^8.4.0",
-    "onchange": "^7.0.2",
-    "rollup": "^2.29.0"
-  }
+    "name": "biati.phpcsfixer",
+    "version": "2.0.0",
+    "description": "PHP CS Fixer formatter",
+    "main": "main.js",
+    "scripts": {
+        "build": "npx rollup -c",
+        "watch": "onchange -i \"Scripts/**/*.js\" -- npm run build"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/alexanderweiss/nova-prettier.git"
+    },
+    "author": "biati",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/alexanderweiss/nova-prettier/issues"
+    },
+    "homepage": "https://github.com/alexanderweiss/nova-prettier#readme",
+    "dependencies": {
+        "esprima-fb": "^15001.1001.0-dev-harmony-fb",
+        "fast-diff": "^1.2.0",
+        "js-beautify": "^1.13.0",
+        "prettydiff": "^101.2.6"
+    },
+    "devDependencies": {
+        "@rollup/plugin-commonjs": "^13.0.0",
+        "@rollup/plugin-json": "^4.1.0",
+        "@rollup/plugin-node-resolve": "^8.4.0",
+        "onchange": "^7.0.2",
+        "rollup": "^2.29.0"
+    }
 }
