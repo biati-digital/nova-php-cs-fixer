@@ -1,6 +1,6 @@
 # Available Twig options
 
-HTML uses prettydiff so you can use the options available for this beautifier. If you need more information make sure to read the documentation of [prettydiff](https://prettydiff.com/documentation.xhtml) to see all available options
+Twig uses prettydiff so you can use the options available for this beautifier. If you need more information make sure to read the documentation of [prettydiff](https://prettydiff.com/documentation.xhtml) to see all available options
 
 ## Options
 
