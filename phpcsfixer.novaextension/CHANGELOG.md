@@ -3,6 +3,8 @@
 - New: Added support for blade files
 - New: Added support for twig files
 - New: Added support for workspace configuration
+- New: New HTML additional fixes
+- Fixed: Indentation error in PHP files with HTML and additional fixes enabled
 - Code updates
 
 ## Version 1.0.3

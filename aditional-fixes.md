@@ -111,3 +111,53 @@ Code after fix
 </h5>
 <?php
 ```
+
+
+### Fix PHP start tag indentation when PHP block is inside HTML and indentation level is at 0, fix id 4
+
+Code before fix
+
+```php
+    <?php
+echo 'Nova';
+if (isset($panic)) {
+    echo 'No';
+} else {
+    echo 'blah blah';
+}
+?>
+```
+
+Code after fix
+
+```php
+<?php
+echo 'Nova';
+if (isset($panic)) {
+    echo 'No';
+} else {
+    echo 'blah blah';
+}
+?>
+```
+
+
+### Fix PHP inside HTML script tags, fix id 5
+
+Code before fix
+
+```php
+<script>
+    const example = < ? php echo json_encode($this - > json); ? > ;
+    const example2 = < ? php echo json_encode($params); ? > ;
+</script>
+```
+
+Code after fix
+
+```php
+<script>
+    const example = <?php echo json_encode($this->json); ?>;
+    const example2 = <?php echo json_encode($params); ?>;
+</script>
+```
