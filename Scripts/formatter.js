@@ -2,7 +2,9 @@
 
 const beautifyHtml = require('js-beautify').html;
 const diff = require('fast-diff');
+const prettydiff = require('./prettydiff.js');
 const extensionConfig = require('./config.js');
+const tabsToSpaces = require('./tabs-to-spaces.js');
 const { log } = require('./helpers.js');
 
 class PHPFormatter {
@@ -28,7 +30,7 @@ class PHPFormatter {
         const allowedExtensions = {
             php: true,
             blade: this.extensionConfig.blade,
-            twig: this.extensionConfig.twig
+            twig: this.extensionConfig.twig,
         };
 
         let extension = nova.path.extname(editor.document.path).substring(1);
@@ -63,6 +65,8 @@ class PHPFormatter {
 
         let text = content;
         let formatted = false;
+
+        text = tabsToSpaces(text, 4);
 
         if (fileName.endsWith('.blade.php')) {
             formatted = this.formatBlade(text);
@@ -102,7 +106,7 @@ class PHPFormatter {
         }
 
         if (this.extensionConfig.htmladditional) {
-            formatted.content = this.afterTextFormatted(formatted.content);
+            formatted.content = this.additionalHTMLFixes(formatted.content);
         }
 
         await this.setFormattedValue({ editor, content, formatted });
@@ -131,8 +135,8 @@ class PHPFormatter {
             body: JSON.stringify({
                 file: filePath,
                 cmd: cmd,
-                config: this.extensionConfig
-            })
+                config: this.extensionConfig,
+            }),
         });
 
         if (!rawResponse.ok) {
@@ -174,7 +178,7 @@ class PHPFormatter {
             const stdOut = [];
             const stdErr = [];
             const process = new Process('/usr/bin/env', {
-                args: cmd
+                args: cmd,
             });
 
             log('Calling PHP Formatting using a process');
@@ -235,7 +239,7 @@ class PHPFormatter {
                 indent_scripts: 'keep',
                 indent_with_tabs: false,
                 max_preserve_newlines: 3,
-                content_unformatted: ['pre', 'code']
+                content_unformatted: ['pre', 'code'],
             },
             formatRules
         );
@@ -349,9 +353,10 @@ class PHPFormatter {
      * @return string
      */
     formatTwig(text) {
+        log('Starting Twig format');
+
         let source = text;
         let output = '',
-            prettydiff = require('prettydiff'),
             options = prettydiff.options;
         options.mode = 'beautify';
         options.language = 'twig';
@@ -369,11 +374,18 @@ class PHPFormatter {
         options.indent_char = indentChar;
         options.indent_size = tabSize;
 
+        log('Twig options');
+        log(JSON.stringify(options));
+
         output = prettydiff();
 
         if (!output) {
+            log('Twig error, no output available', true);
             return text;
         }
+
+        log('Twig formatted text');
+        log(output);
 
         return output;
     }
@@ -396,17 +408,20 @@ class PHPFormatter {
         return text;
     }
 
-    afterTextFormatted(text) {
-        //let re = /{\s\S*( +)\?>[\n\r]+?(<[\S]+.*>[\s\S]*?^<[\/!].*>[\n\r]+?^<\?php)/gm;
+    additionalHTMLFixes(text) {
         let re = /( +).*\?>[\n\r]+?(^<[\S]+.*>[\s\S]*?[\n\r]+?^<\?php)/gm;
         let m;
         do {
             m = re.exec(text);
             if (m) {
                 if (m.length == 3) {
-                    var fullmatch = m[0];
-                    var space = m[1];
-                    var toindent = m[2];
+                    const fullmatch = m[0];
+                    const toindent = m[2];
+                    let space = m[1];
+
+                    if (space.length == 1) {
+                        space = '';
+                    }
 
                     // Fix Inlined HTML fix id 1
                     const reindented = this.indentLines(space, toindent);
@@ -444,6 +459,45 @@ class PHPFormatter {
                 }
             }
         } while (m3);
+
+        // Fix PHP open tag indentation fix id 4
+        let re4 = /(^\s+<\?php)[\s+]?\n(.*?)^\?>$/gms;
+        let m4;
+        do {
+            m4 = re4.exec(text);
+            if (m4) {
+                const fullmatch = m4[0];
+                const startTag = m4[1];
+                const innerMatch = m4[2];
+
+                if (!startTag.startsWith('<')) {
+                    let innerLines = innerMatch.split('\n');
+                    let firstLine = '';
+
+                    for (let i = 0; i < innerLines.length; i++) {
+                        if (innerLines[i].trim() !== '') {
+                            firstLine = innerLines[i];
+                            break;
+                        }
+                    }
+
+                    if (firstLine.charAt(0).trim() !== '') {
+                        let cleanedStart = startTag.trim();
+                        let cleanedMatch = fullmatch.replace(startTag, cleanedStart);
+                        text = text.replace(fullmatch, cleanedMatch);
+                        console.log('firstLine char');
+                        console.log(firstLine.charAt(0));
+                    }
+                }
+            }
+        } while (m4);
+
+        // Fix < ? php tags  id 5
+        text = text.replace(/< \?/g, '<?');
+        text = text.replace(/<\? php/g, '<?php');
+        text = text.replace(/ - > /g, '->');
+        text = text.replace(/\? >/g, '?>');
+        text = text.replace(/\?> ;/g, '?>;');
 
         return text;
     }
