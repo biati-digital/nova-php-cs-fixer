@@ -25820,6 +25820,8 @@ class PHPFormatter {
      * @return string
      */
     formatBlade(text) {
+        log$2('Starting Blade format');
+
         let html = text;
         html = html.replace(/\{\{((?:(?!\}\}).)+)\}\}/g, function (m, c) {
             if (c) {
@@ -25869,6 +25871,9 @@ class PHPFormatter {
         bladeFormatRules.indent_size = this.extensionConfig.bladeTabWidth;
         bladeFormatRules.indent_with_tabs = this.extensionConfig.bladeUseTabs;
 
+        log$2('Converted Blade to HTML');
+        log$2(html);
+
         html = this.formatHTML(html, bladeFormatRules);
 
         html = html.replace(/^([ \t]*)<\/?blade ([a-z]+)\|?([^>\/]+)?\/?>$/gim, function (m, s, d, c) {
@@ -25915,11 +25920,13 @@ class PHPFormatter {
                         }
                         return f;
                     });
-                    console.log(indentedElse);
                     html = html.replace(fullmatch, indentedElse);
                 }
             }
         } while (m1);
+
+        log$2('Restored Blade from formatted HTML');
+        log$2(html);
 
         return html;
     }
