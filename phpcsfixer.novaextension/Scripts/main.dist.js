@@ -25838,14 +25838,17 @@ class PHPFormatter {
                 c = '|' + encodeURIComponent(c);
             }
             switch (d) {
+                case 'php':
                 case 'break':
                 case 'continue':
                 case 'empty':
-                case 'else':
                 case 'elseif':
+                case 'else':
                 case 'extends':
                 case 'case':
                 case 'csrf':
+                case 'spaceless':
+                case 'includeFirst':
                 case 'include':
                 case 'json':
                 case 'method':
@@ -25891,6 +25894,32 @@ class PHPFormatter {
             }
             return '{{' + c + '}}';
         });
+
+        // Dedent elseif|else inside if blocks
+        let elsereg = /(\s+)?@if(.*)?@endif/gms;
+        let m1;
+        do {
+            m1 = elsereg.exec(html);
+            if (m1) {
+                let fullmatch = m1[0];
+                let initialTabSize = m1[1];
+                let innerMatch = m1[2];
+
+                if (innerMatch.includes('@else')) {
+                    let indentedElse = fullmatch.replace(/^.+?@else/gm, (f) => {
+                        if (!bladeFormatRules.indent_with_tabs && f.startsWith(' '.repeat(bladeFormatRules.indent_size))) {
+                            f = f.replace(' '.repeat(bladeFormatRules.indent_size), '');
+                        }
+                        if (bladeFormatRules.indent_with_tabs) {
+                            f = f.replace('\t', '');
+                        }
+                        return f;
+                    });
+                    console.log(indentedElse);
+                    html = html.replace(fullmatch, indentedElse);
+                }
+            }
+        } while (m1);
 
         return html;
     }
