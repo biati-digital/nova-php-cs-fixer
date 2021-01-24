@@ -1,24 +1,24 @@
 {
-    "name": "biati.phpcsfixer",
-    "version": "2.0.0",
-    "description": "PHP Formatted",
-    "main": "main.js",
-    "scripts": {
-        "build": "npx rollup -c",
-        "watch": "onchange -i \"src/**/*.js\" -- npm run build"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/biati-digital/nova-php-cs-fixer.git"
-    },
-    "author": "biati",
-    "license": "ISC",
-    "bugs": {
-        "url": "https://github.com/biati-digital/nova-php-cs-fixer/issues"
-    },
-    "homepage": "https://github.com/biati-digital/nova-php-cs-fixer",
-    "dependencies": {
-        "uninstall": "0.0.0"
-    },
-    "devDependencies": {}
+  "name": "biati.phpcsfixer",
+  "version": "2.0.1",
+  "description": "PHP Formatted",
+  "main": "main.js",
+  "scripts": {
+    "build": "npx rollup -c",
+    "watch": "onchange -i \"src/**/*.js\" -- npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/biati-digital/nova-php-cs-fixer.git"
+  },
+  "author": "biati",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/biati-digital/nova-php-cs-fixer/issues"
+  },
+  "homepage": "https://github.com/biati-digital/nova-php-cs-fixer",
+  "dependencies": {
+    "uninstall": "0.0.0"
+  },
+  "devDependencies": {}
 }
