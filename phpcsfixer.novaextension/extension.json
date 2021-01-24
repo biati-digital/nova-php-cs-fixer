@@ -3,7 +3,7 @@
   "name": "PHP CS Fixer",
   "organization": "biati",
   "description": "Automatically format PHP files using php-cs-fixer with HTML, Blade and Twig support.",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "repository": "https://github.com/biati-digital/nova-php-cs-fixer",
   "bugs": "https://github.com/biati-digital/nova-php-cs-fixer/issues",
   "funding": "https://www.paypal.com/paypalme/bdigital9816/0usd",
