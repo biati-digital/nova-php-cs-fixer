@@ -1,3 +1,7 @@
+## Version 2.0.1
+
+- Fixed: Indentation error in blade files for elseif|else inside if blocks
+
 ## Version 2.0.0
 
 - New: Added support for blade files
