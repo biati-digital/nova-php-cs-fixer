@@ -1,3 +1,7 @@
+## Version 2.0.2
+
+- Improved: Blade debug logs to display more information
+
 ## Version 2.0.1
 
 - Fixed: Indentation error in blade files for elseif|else inside if blocks
