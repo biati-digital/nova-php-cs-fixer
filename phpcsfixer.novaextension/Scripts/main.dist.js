@@ -25583,7 +25583,7 @@ class PHPFormatter {
         const allowedExtensions = {
             php: true,
             blade: this.extensionConfig.blade,
-            twig: this.extensionConfig.twig,
+            twig: this.extensionConfig.twig
         };
 
         let extension = nova.path.extname(editor.document.path).substring(1);
@@ -25688,8 +25688,8 @@ class PHPFormatter {
             body: JSON.stringify({
                 file: filePath,
                 cmd: cmd,
-                config: this.extensionConfig,
-            }),
+                config: this.extensionConfig
+            })
         });
 
         if (!rawResponse.ok) {
@@ -25731,7 +25731,7 @@ class PHPFormatter {
             const stdOut = [];
             const stdErr = [];
             const process = new Process('/usr/bin/env', {
-                args: cmd,
+                args: cmd
             });
 
             log$2('Calling PHP Formatting using a process');
@@ -25792,7 +25792,7 @@ class PHPFormatter {
                 indent_scripts: 'keep',
                 indent_with_tabs: false,
                 max_preserve_newlines: 3,
-                content_unformatted: ['pre', 'code'],
+                content_unformatted: ['pre', 'code']
             },
             formatRules
         );
@@ -25924,6 +25924,9 @@ class PHPFormatter {
                 }
             }
         } while (m1);
+
+        html = html.replace(/\{\{ --/g, '{{--');
+        html = html.replace(/\-- \}\}/g, '--}}');
 
         log$2('Restored Blade from formatted HTML');
         log$2(html);
@@ -26080,11 +26083,14 @@ class PHPFormatter {
         } while (m4);
 
         // Fix < ? php tags  id 5
-        text = text.replace(/< \?/g, '<?');
-        text = text.replace(/<\? php/g, '<?php');
-        text = text.replace(/ - > /g, '->');
-        text = text.replace(/\? >/g, '?>');
-        text = text.replace(/\?> ;/g, '?>;');
+        if (text.includes('<script') && text.includes('</script>')) {
+            text = text.replace(/< \?/g, '<?');
+            text = text.replace(/<\? php/g, '<?php');
+            text = text.replace(/ - > /g, '->');
+            text = text.replace(/\? >/g, '?>');
+            text = text.replace(/\?> ;/g, '?>;');
+            text = text.replace(/\?\n.+>$/gm, '?>');
+        }
 
         return text;
     }
