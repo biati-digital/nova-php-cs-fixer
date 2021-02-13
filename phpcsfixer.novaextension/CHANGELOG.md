@@ -1,3 +1,12 @@
+## Version 2.0.4
+
+- Minor improvements
+
+## Version 2.0.4
+
+- Fixed: Blade comments
+- Fixed: PHP inside HTML script tags
+
 ## Version 2.0.2
 
 - Improved: Blade debug logs to display more information
