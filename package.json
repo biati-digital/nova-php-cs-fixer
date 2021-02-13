@@ -1,6 +1,6 @@
 {
   "name": "biati.phpcsfixer",
-  "version": "2.0.2",
+  "version": "2.0.4",
   "description": "PHP CS Fixer formatter",
   "main": "main.js",
   "scripts": {
