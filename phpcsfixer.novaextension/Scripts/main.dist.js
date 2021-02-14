@@ -25871,6 +25871,11 @@ class PHPFormatter {
         bladeFormatRules.indent_size = this.extensionConfig.bladeTabWidth;
         bladeFormatRules.indent_with_tabs = this.extensionConfig.bladeUseTabs;
 
+        if (html.includes('blade endphp>')) {
+            html = html.replace(/<blade php\/>/g, '<phptag>{{--');
+            html = html.replace(/<\/blade endphp>/g, '--}}</phptag>');
+        }
+
         log$2('Converted Blade to HTML');
         log$2(html);
 
@@ -25927,6 +25932,18 @@ class PHPFormatter {
 
         html = html.replace(/\{\{ --/g, '{{--');
         html = html.replace(/\-- \}\}/g, '--}}');
+
+        if (html.includes('<phptag>')) {
+            html = html.replace(/(.+<phptag>)([\s\S])*?<\/phptag>$/gm, function (m, c) {
+                // c is     <phptag>
+                //m is the entire php block
+                const endTag = c.replace('<phptag>', '@endphp');
+                m = m.replace(/<phptag>\{\{--/g, '@php');
+                m = m.replace(/--\}\}<\/phptag>/g, endTag);
+
+                return m;
+            });
+        }
 
         log$2('Restored Blade from formatted HTML');
         log$2(html);
