@@ -1,8 +1,12 @@
-## Version 2.0.4
+## Version 2.0.5
+
+- Fixed: Blade @php and @endphp tags not indented correctly
+
+## Version 2.0.5
 
 - Minor improvements
 
-## Version 2.0.4
+## Version 2.0.5
 
 - Fixed: Blade comments
 - Fixed: PHP inside HTML script tags
