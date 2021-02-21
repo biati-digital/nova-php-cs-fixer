@@ -9,11 +9,11 @@
 
 - Fixed: Blade @php and @endphp blocks not indented correctly
 
-## Version 2.0.5
+## Version 2.0.4
 
 - Minor improvements
 
-## Version 2.0.5
+## Version 2.0.3
 
 - Fixed: Blade comments
 - Fixed: PHP inside HTML script tags
