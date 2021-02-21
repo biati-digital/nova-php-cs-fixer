@@ -1,5 +1,6 @@
 ## Version 2.0.6
 
+- New: added support for the extension advphp
 - Improved: Formatting speed on large PHP files
 - Improved: Indentation in certain files with mixed PHP and HTML
 - Let Nova restore the cursor position/selection after formatting
