@@ -117,7 +117,7 @@ By default phpcs fixer uses spaces, if you want to use tabs you can define in yo
 
 3.- Go to the extension preferences and select the file you just created and that's it
 
-![image info](./phpcsfixer.novaextension/images/extension/rules-file.png)
+![image info](https://github.com/biati-digital/nova-php-cs-fixer/blob/main/phpcsfixer.novaextension/Images/extension/rules-file.png?raw=true)
 
 
 
