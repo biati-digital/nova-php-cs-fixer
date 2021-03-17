@@ -1,3 +1,6 @@
+## Version 3.0.1
+- Improved: handling previous preferences
+
 ## Version 3.0.0
 
 - New: Added new option to select the coding standard
