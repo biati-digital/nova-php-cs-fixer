@@ -1,11 +1,23 @@
-async function copyServiceFiles() {
+async function copyServiceFiles(verion) {
     const fixerPath = nova.path.join(nova.extension.path, 'php');
     const dependencyDir = nova.path.join(nova.extension.globalStoragePath, 'php');
-    const exists = nova.fs.stat(dependencyDir);
+    const phpcsfixerFile = 'php-cs-fixer-' + verion;
+    const phpcsfixerFilePath = nova.path.join(dependencyDir, phpcsfixerFile);
+    let exists = nova.fs.stat(dependencyDir);
+
+    if (!nova.fs.stat(phpcsfixerFilePath) && exists) {
+        await nova.fs.rmdir(dependencyDir);
+        exists = false;
+    }
 
     if (!exists) {
-        await nova.fs.copy(fixerPath, dependencyDir);
-        await makeFileExecutable(nova.path.join(dependencyDir, 'php-cs-fixer'));
+        try {
+            await nova.fs.copy(fixerPath, dependencyDir);
+        } catch (error) {
+            console.error(error);
+        }
+
+        await makeFileExecutable(nova.path.join(dependencyDir, phpcsfixerFile));
     }
 
     return dependencyDir;
@@ -14,7 +26,7 @@ async function copyServiceFiles() {
 async function makeFileExecutable(file) {
     return new Promise((resolve, reject) => {
         const process = new Process('/usr/bin/env', {
-            args: ['chmod', 'u+x', file],
+            args: ['chmod', 'u+x', file]
         });
         process.onDidExit((status) => {
             if (status === 0) {
@@ -27,9 +39,9 @@ async function makeFileExecutable(file) {
     });
 }
 
-async function extensionInstaller(disposable, logFn = null) {
+async function extensionInstaller(verion, disposable, logFn = null) {
     try {
-        await copyServiceFiles();
+        await copyServiceFiles(verion);
     } catch (err) {
         throw err;
     }
