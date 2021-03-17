@@ -80,6 +80,10 @@ class PHPFormatter {
             return true;
         }
 
+        if (this.extensionConfig.htmltry && this.extensionConfig.htmladditional) {
+            text = this.preFixes(text);
+        }
+
         if (this.extensionConfig.htmltry) {
             text = this.formatHTML(text);
             formatted = text;
@@ -88,8 +92,6 @@ class PHPFormatter {
                 return true;
             }
         }
-
-        //text = this.prePHPClenup(text);
 
         const tmpFile = await this.tmpFile(filePath, text);
         const command = await this.getCommand(tmpFile);
@@ -106,7 +108,7 @@ class PHPFormatter {
         }
 
         if (this.extensionConfig.htmladditional) {
-            formatted.content = this.additionalHTMLFixes(formatted.content);
+            formatted.content = this.additionalHTMLFixes(formatted.content, editor);
         }
 
         await this.setFormattedValue({ editor, content, formatted });
@@ -244,12 +246,62 @@ class PHPFormatter {
             formatRules
         );
 
+        // Remove PHP from script tags, jsbeautify will mess of the PHP code
+        let phpinsidescript = {};
+        if (text.includes('<script')) {
+            let re = /<script\b[^>]*>([\s\S]*?)<\/script>/gm;
+            let m,
+                i = 0;
+            do {
+                m = re.exec(text);
+                if (m) {
+                    if (m.length == 2) {
+                        const script = m[1];
+                        if (script.includes('<?php') && script.includes('?>')) {
+                            let cleanScript = script.replace(/(<\?php[\s\S]+?.*\?>)/gm, function (m, c) {
+                                let id = Math.random().toString(36).substr(2, 9);
+                                phpinsidescript[id] = c;
+                                return '/*phpscriptplaceholder' + id + '*/';
+                            });
+
+                            text = text.replace(script, cleanScript);
+                        }
+                    }
+                }
+            } while (m);
+        }
+
+        if (text.includes('?><')) {
+            let re2 = /\?>(<\S.+>.*)<\?php/gm;
+            let m2;
+            do {
+                m2 = re2.exec(text);
+                if (m2) {
+                    if (m2.length == 2) {
+                        let full = m2[0];
+                        let inner = m2[1];
+                        let newIndent = full.replace(inner, '\n' + inner + '\n');
+                        text = text.replace(full, newIndent);
+                    }
+                }
+            } while (m2);
+        }
+
         HTMLConfig.end_with_newline = false;
         log('Format HTML inside PHP before processing PHP with config');
 
         const startTime = Date.now();
         log(JSON.stringify(HTMLConfig));
         text = beautifyHtml(text, HTMLConfig);
+
+        // Restore PHP from script tags
+        if (Object.keys(phpinsidescript).length) {
+            for (let key in phpinsidescript) {
+                text = text.replace('/*phpscriptplaceholder' + key + '*/', phpinsidescript[key]);
+            }
+            text = text.replace(/\?> ;/g, '?>;');
+        }
+
         const elapsedTime = Date.now() - startTime;
         log(`HTML in PHP formatted in ${elapsedTime}ms`);
 
@@ -451,21 +503,24 @@ class PHPFormatter {
      * Some precleanup for more
      * accurate results
      */
-    prePHPClenup(text) {
-        var re = / *?<\?php([\n\r] +)[A-Za-z]+/g;
-        var m;
-        do {
-            m = re.exec(text);
-            if (m) {
-                const cleanedStr = m[0].replace(m[1], '\n' + m[0].substring(0, m[0].indexOf('<')));
-                text = text.replace(m[0], cleanedStr);
+    preFixes(text) {
+        text = text.replace(/^(\s+)?<\?php(\s+if\s?\(.+\)\s?{$)/gm, function (m, s, c) {
+            if (typeof s == 'undefined') {
+                return m;
             }
-        } while (m);
-
+            // fixes lines like <?php if (has_nav_menu('top-menu')) {
+            // will be converted to
+            // <?php
+            // if (has_nav_menu('top-menu')) {
+            const indented = '\n' + s + c.trim();
+            return m.replace(c, indented);
+        });
         return text;
     }
 
-    additionalHTMLFixes(text) {
+    additionalHTMLFixes(text, editor) {
+        let indentChar = editor.tabText.charAt(0);
+        let indentSize = editor.tabLength;
         let re = /( +).*\?>[\n\r]+?(^<[\S]+.*>[\s\S]*?[\n\r]+?^<\?php)/gm;
         let m;
         do {
@@ -481,7 +536,7 @@ class PHPFormatter {
                     }
 
                     // Fix Inlined HTML fix id 1
-                    const reindented = this.indentLines(space, toindent);
+                    const reindented = this.indentLines(space, toindent, indentChar, indentSize);
                     const newFixed = fullmatch.replace(toindent, reindented);
                     text = text.replace(fullmatch, newFixed);
                 }
@@ -541,7 +596,7 @@ class PHPFormatter {
                     if (firstLine.charAt(0).trim() !== '') {
                         let cleanedStart = startTag.trim();
                         let cleanedMatch = fullmatch.replace(startTag, cleanedStart);
-                        text = text.replace(fullmatch, cleanedMatch);
+                        //text = text.replace(fullmatch, cleanedMatch);
                         console.log('firstLine char');
                         console.log(firstLine.charAt(0));
                     }
@@ -550,14 +605,14 @@ class PHPFormatter {
         } while (m4);
 
         // Fix < ? php tags  id 5
-        if (text.includes('<script') && text.includes('</script>')) {
+        /*if (text.includes('<script') && text.includes('</script>')) {
             text = text.replace(/< \?/g, '<?');
             text = text.replace(/<\? php/g, '<?php');
             text = text.replace(/ - > /g, '->');
             text = text.replace(/\? >/g, '?>');
             text = text.replace(/\?> ;/g, '?>;');
             text = text.replace(/\?\n.+>$/gm, '?>');
-        }
+        }*/
 
         return text;
     }
@@ -568,12 +623,70 @@ class PHPFormatter {
      * each line with the specified
      * content
      */
-    indentLines(before, text) {
-        const result = text.split('\n').map((line) => {
-            return before + line;
-        });
+    indentLines(before, text, indentChar, indentSize) {
+        let indentMore = false;
+        let prevprocessedLineWhiteSpace = -1;
 
-        return result.join('\n');
+        indentSize = parseInt(indentSize);
+
+        const lines = text.split('\n');
+
+        lines.forEach((line, index) => {
+            let space = before;
+            let currentline = line.trim();
+
+            if (currentline !== '') {
+                if (prevprocessedLineWhiteSpace < 0) {
+                    prevprocessedLineWhiteSpace = 0;
+                }
+
+                if (indentMore) {
+                    space = space + ' '.repeat(indentSize);
+                }
+
+                if (currentline.startsWith('<script')) {
+                    indentMore = true;
+                }
+
+                if (currentline.startsWith('</script')) {
+                    space = before;
+                    indentMore = false;
+                }
+
+                let lineCleanIndent = 0;
+                for (var i = 0; i < line.length; i++) {
+                    let charIs = line.charAt(i);
+                    if (charIs !== ' ') {
+                        break;
+                    }
+                    lineCleanIndent = lineCleanIndent + 1;
+                }
+
+                let isClosingLine = false;
+
+                if (currentline.startsWith('}')) {
+                    isClosingLine = true;
+                }
+
+                if (isClosingLine) {
+                    console.log('this is a closing line', currentline);
+                    console.log('Indent is', prevprocessedLineWhiteSpace, lineCleanIndent);
+                    lines[index] = space + currentline;
+                    prevprocessedLineWhiteSpace = lineCleanIndent;
+                } else {
+                    console.log('line: ', line, lineCleanIndent, prevprocessedLineWhiteSpace);
+                    if (lineCleanIndent > prevprocessedLineWhiteSpace + indentSize) {
+                        line = ' '.repeat(prevprocessedLineWhiteSpace + indentSize) + currentline;
+                        prevprocessedLineWhiteSpace = prevprocessedLineWhiteSpace + indentSize;
+                    } else {
+                        prevprocessedLineWhiteSpace = lineCleanIndent;
+                    }
+                }
+
+                lines[index] = space + line;
+            }
+        });
+        return lines.join('\n');
     }
 
     /*
@@ -600,97 +713,19 @@ class PHPFormatter {
             return false;
         }
 
-        const [cursor, edits] = this.diff(content, formattedText, editor.selectedRanges);
-
-        if (edits) {
-            return this.applyDiff(editor, cursor, edits);
-        }
-
-        return this.replace(editor, formattedText);
+        log('Updating document content');
+        await this.setEditorContent(editor, formattedText);
+        return true;
     }
 
-    diff(original, formatted, selectedRanges) {
-        // Find a cursor that does not occur in this document
-        const POSSIBLE_CURSORS = String.fromCharCode(0xfffd, 0xffff, 0x1f094, 0x1f08d, 0xe004, 0x1f08d).split('');
-        const cursor = POSSIBLE_CURSORS.find((cursor) => !original.includes(cursor) && !formatted.includes(cursor));
-
-        if (!cursor) {
-            return null;
-        }
-
-        let originalWithCursors = '';
-        let lastEnd = 0;
-
-        for (const selection of selectedRanges) {
-            originalWithCursors += original.slice(lastEnd, selection.start) + cursor + original.slice(selection.start, selection.end) + cursor;
-            lastEnd = selection.end;
-        }
-
-        originalWithCursors += original.slice(lastEnd);
-
-        // Diff
-        return [cursor, diff(originalWithCursors, formatted)];
-    }
-
-    async applyDiff(editor, cursor, edits) {
-        const selections = [];
-        await editor.edit((e) => {
-            let offset = 0;
-            let toRemove = 0;
-
-            // Add an extra empty edit so any trailing delete is actually run.
-            edits.push([diff.EQUAL, '']);
-
-            for (const [edit, str] of edits) {
-                if (edit === diff.DELETE) {
-                    toRemove += str.length;
-
-                    // Check if the cursors are in here
-                    let cursorIndex = -1;
-                    while (true) {
-                        cursorIndex = str.indexOf(cursor, cursorIndex + 1);
-                        if (cursorIndex === -1) {
-                            break;
-                        }
-
-                        const lastSelection = selections[selections.length - 1];
-                        if (!lastSelection || lastSelection[1]) {
-                            selections[selections.length] = [offset];
-                        } else {
-                            lastSelection[1] = offset;
-                        }
-                        toRemove -= cursor.length;
-                    }
-
-                    continue;
-                }
-
-                if (edit === diff.EQUAL && toRemove) {
-                    e.replace(new Range(offset, offset + toRemove), '');
-                } else if (edit === diff.INSERT) {
-                    e.replace(new Range(offset, offset + toRemove), str);
-                }
-
-                toRemove = 0;
-                offset += str.length;
-            }
-        });
-
-        editor.selectedRanges = selections.map((s) => new Range(s[0], s[1]));
-        //editor.scrollToCursorPosition();
-    }
-
-    async replace(editor, formatted) {
+    async setEditorContent(editor, formatted, range = false) {
         const { document } = editor;
-
         const cursorPosition = editor.selectedRange.end;
-        const documentRange = new Range(0, document.length);
+        const documentRange = range ? range : new Range(0, document.length);
 
         await editor.edit((e) => {
             e.replace(documentRange, formatted);
         });
-
-        editor.selectedRanges = [new Range(cursorPosition, cursorPosition)];
     }
 
     /*

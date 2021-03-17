@@ -3,7 +3,7 @@
   "name": "PHP CS Fixer",
   "organization": "biati",
   "description": "Automatically format PHP files using php-cs-fixer with HTML, Blade and Twig support.",
-  "version": "2.0.6",
+  "version": "3.0.0",
   "repository": "https://github.com/biati-digital/nova-php-cs-fixer",
   "bugs": "https://github.com/biati-digital/nova-php-cs-fixer/issues",
   "funding": "https://www.paypal.com/paypalme/bdigital9816/0usd",
@@ -37,20 +37,6 @@
           "default": ""
         },
         {
-          "key": "biati.phpcsfixer.onsave",
-          "title": "Format on save",
-          "description": "Enable to automatically format on file save",
-          "type": "boolean",
-          "default": true
-        },
-        {
-          "key": "biati.phpcsfixer.ignoreremote",
-          "title": "Ignore remote files",
-          "description": "Ignore format on save for remote files",
-          "type": "boolean",
-          "default": false
-        },
-        {
           "key": "biati.phpcsfixer.port",
           "title": "Fixer Dedicated server Port",
           "description": "If using a dedicated server to fix the files, you can adjust the server port here.",
@@ -74,11 +60,19 @@
           "default": false
         },
         {
+          "key": "biati.phpcsfixer.standard",
+          "title": "Coding Standard",
+          "description": "Select the coding standard, you can apply additional rules below.",
+          "type": "enum",
+          "default": "PSR12",
+          "values": ["PSR1", "PSR2", "PSR12", "Symfony", "PhpCsFixer", "WordPress", "None"]
+        },
+        {
           "key": "biati.phpcsfixer.rules",
-          "title": "Fixer Rules",
-          "description": "Define the rules you want to apply, please read the docs for more information.",
+          "title": "Additional Fixer Rules",
+          "description": "One per line. Define additional rules you want to apply. Please read the docs for more information.",
           "type": "text",
-          "default": "@PSR2"
+          "default": ""
         },
         {
           "key": "biati.phpcsfixer.phpcsconfig",
@@ -86,6 +80,42 @@
           "description": "Instead of defining rules you can use a global .php_cs file for all the projects, if you add a .php_cs in the root of your project it will be used instead of the global configuration. The rules above will be ignored if the configuration file is used.",
           "type": "path",
           "default": ""
+        },
+        {
+          "key": "biati.phpcsfixer.onsave",
+          "title": "Format on save",
+          "description": "Enable to automatically format on file save",
+          "type": "boolean",
+          "default": true
+        },
+        {
+          "key": "biati.phpcsfixer.ignoreremote",
+          "title": "Ignore remote files",
+          "description": "Ignore format on save for remote files",
+          "type": "boolean",
+          "default": false
+        },
+        {
+          "key": "biati.phpcsfixer.phpRespectNova",
+          "title": "Respect Nova's preferences for PHP indentation",
+          "description": "If enabled, the formatter will use Nova's tab width and indentetation style which also adds supoprt for .editorconfig. If you prefer you can define the tab width and style below",
+          "type": "boolean",
+          "default": false
+        },
+        {
+          "key": "biati.phpcsfixer.phpUseTabs",
+          "title": "Use tabs",
+          "description": "Indent lines with tabs instead of spaces.",
+          "type": "boolean",
+          "default": false
+        },
+        {
+          "key": "biati.phpcsfixer.phpTabWidth",
+          "title": "Tab width",
+          "description": "Specify the number of spaces per indentation-level.",
+          "type": "number",
+          "default": 4,
+          "min": 0
         }
       ]
     },
@@ -110,24 +140,9 @@
           "default": false
         },
         {
-          "key": "biati.phpcsfixer.htmlUseTabs",
-          "title": "Use tabs",
-          "description": "Indent lines with tabs instead of spaces.",
-          "type": "boolean",
-          "default": false
-        },
-        {
-          "key": "biati.phpcsfixer.htmlTabWidth",
-          "title": "Tab width",
-          "description": "Specify the number of spaces per indentation-level.",
-          "type": "number",
-          "default": 4,
-          "min": 0
-        },
-        {
           "key": "biati.phpcsfixer.htmlrules",
           "title": "HTML Rules",
-          "description": "Additional rules you want to apply when formatting HTML. (one per line)",
+          "description": "Additional rules you want to apply when formatting HTML inside a PHP file. (one per line)",
           "link": "https://github.com/biati-digital/nova-php-cs-fixer/blob/main/html-options.md",
           "type": "text",
           "default": "preserve_newlines: true"
@@ -145,6 +160,13 @@
           "description": "Enable this box to format Blade files on save",
           "type": "boolean",
           "default": true
+        },
+        {
+          "key": "biati.phpcsfixer.bladeRespectNova",
+          "title": "Respect Nova preferences for Blade indentation",
+          "description": "If enabled, the formatter will use Nova's tab width and indentetation style which also adds supoprt for .editorconfig. If you prefer you can define the tab width and style below",
+          "type": "boolean",
+          "default": false
         },
         {
           "key": "biati.phpcsfixer.bladeUseTabs",
@@ -182,6 +204,13 @@
           "description": "Enable this box to format Twig files on save",
           "type": "boolean",
           "default": true
+        },
+        {
+          "key": "biati.phpcsfixer.twigRespectNova",
+          "title": "Respect Nova preferences for Twig indentation",
+          "description": "If enabled, the formatter will use Nova's tab width and indentetation style which also adds supoprt for .editorconfig. If you prefer you can define the tab width and style below",
+          "type": "boolean",
+          "default": false
         },
         {
           "key": "biati.phpcsfixer.twigUseTabs",
@@ -232,6 +261,14 @@
           "default": true
         },
         {
+          "key": "biati.phpcsfixer.standard",
+          "title": "Coding Standard",
+          "description": "Select the coding standard, you can apply additional rules below.",
+          "type": "enum",
+          "default": "PSR12",
+          "values": ["PSR1", "PSR2", "PSR12", "Symfony", "PhpCsFixer", "WordPress", "None"]
+        },
+        {
           "key": "biati.phpcsfixer.rules",
           "title": "Fixer Rules",
           "description": "Define the rules you want to apply, please read the docs for more information.",
@@ -268,21 +305,6 @@
           "default": false
         },
         {
-          "key": "biati.phpcsfixer.htmlUseTabs",
-          "title": "Use tabs",
-          "description": "Indent lines with tabs instead of spaces.",
-          "type": "boolean",
-          "default": false
-        },
-        {
-          "key": "biati.phpcsfixer.htmlTabWidth",
-          "title": "Tab width",
-          "description": "Specify the number of spaces per indentation-level.",
-          "type": "number",
-          "default": 4,
-          "min": 0
-        },
-        {
           "key": "biati.phpcsfixer.htmlrules",
           "title": "HTML Rules",
           "description": "Additional rules you want to apply when formatting HTML. (one per line)",
@@ -303,6 +325,13 @@
           "description": "Enable this box to format Blade files on save",
           "type": "boolean",
           "default": true
+        },
+        {
+          "key": "biati.phpcsfixer.bladeRespectNova",
+          "title": "Respect Nova preferences for Blade indentation",
+          "description": "If enabled, the formatter will use Nova's tab width and indentetation style which also adds supoprt for .editorconfig. If you prefer you can define the tab width and style below",
+          "type": "boolean",
+          "default": false
         },
         {
           "key": "biati.phpcsfixer.bladeUseTabs",
@@ -340,6 +369,13 @@
           "description": "Enable this box to format Twig files on save",
           "type": "boolean",
           "default": true
+        },
+        {
+          "key": "biati.phpcsfixer.twigRespectNova",
+          "title": "Respect Nova preferences for Twig indentation",
+          "description": "If enabled, the formatter will use Nova's tab width and indentetation style which also adds supoprt for .editorconfig. If you prefer you can define the tab width and style below",
+          "type": "boolean",
+          "default": false
         },
         {
           "key": "biati.phpcsfixer.twigUseTabs",

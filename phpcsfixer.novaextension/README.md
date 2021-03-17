@@ -16,6 +16,10 @@ This is an extension for Nova to format PHP files on save or by command, it uses
 
 If you are using Prettier by Alexander Weiss make sure to go to Prettier Preferences and in the section **Ignored Syntaxes** select PHP.
 
+
+## Need help configuring the extension?
+This extension uses phpcs fixer under the hood, if you try to format your code and don't see any change then there's a big chance you are not setting your rules correctly, here you can see the recommended way for defining your fixer rules [phpcsfixer-rules.md](https://github.com/biati-digital/nova-php-cs-fixer/blob/main/phpcsfixer-rules.md)
+
 ## Extension Options
 
 This extension provides multiple options to help you customize the formatting of your code
@@ -106,3 +110,8 @@ indent_scripts: "keep"
 preserve: 3
 new_line: true
 ```
+
+
+## Help us improve the extension
+
+There's a link to submit bug reports, if you find an error please let us know, it takes you a few minutes.
