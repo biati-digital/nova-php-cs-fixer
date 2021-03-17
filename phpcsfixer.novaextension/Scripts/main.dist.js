@@ -5826,7 +5826,7 @@ const { log: log$2, stringToObject: stringToObject$1 } = helpers;
  *
  */
  
-class HTMLFormatter$1 {
+class HTMLFormatter {
     constructor(data) {
         let { text, editor, config } = data;
         this.config = config;
@@ -5943,7 +5943,7 @@ class HTMLFormatter$1 {
     }
 }
 
-var formatterHtml = HTMLFormatter$1;
+var formatterHtml = HTMLFormatter;
 
 const { log: log$3, stringToObject: stringToObject$2 } = helpers;
 
@@ -25326,7 +25326,6 @@ class TwigFormatter {
 
 var formatterTwig = TwigFormatter;
 
-const beautifyHtml$1 = js$1.html;
 const { log: log$5, stringToObject: stringToObject$4, spacesToTabs: spacesToTabs$1, adjustSpacesLength: adjustSpacesLength$1, indentLines: indentLines$1 } = helpers;
 
 /*
@@ -25433,18 +25432,19 @@ class PHPFormatter {
             configFile = configFile.replace(/(\s+)/g, '\\$1');
             cmd.push(`--config=${configFile}`);
         } else {
-            userRules = userRules.replace('@PSR1', '');
-            userRules = userRules.replace('@PSR2', '');
-            userRules = userRules.replace('@Symfony', '');
-            userRules = userRules.replace('@PhpCsFixer', '');
-            userRules = userRules.trim();
-
             let rulesLines = userRules.split('\n');
 
             if (userRules == '') {
                 let rules = `--rules=@${phpStandard}`;
                 cmd.push(rules);
             } else if (rulesLines.length == 1) {
+                
+                userRules = userRules.replace('@PSR1', '');
+                userRules = userRules.replace('@PSR2', '');
+                userRules = userRules.replace('@Symfony', '');
+                userRules = userRules.replace('@PhpCsFixer', '');
+                userRules = userRules.trim();
+                
                 let rules = `--rules=@${phpStandard},${userRules}`;
                 cmd.push(rules);
             } else {
@@ -25687,7 +25687,7 @@ class PHPFormatter {
             return text;
         }
         
-        const phpHTMLFormatted = new HTMLFormatter({
+        const phpHTMLFormatted = new formatterHtml({
             text: text,
             config: this.config,
             editor: this.editor

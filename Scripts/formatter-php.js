@@ -1,5 +1,4 @@
-const Formatter = require('./formatter.js');
-const beautifyHtml = require('js-beautify').html;
+const HTMLFormatter = require('./formatter-html.js');
 const { log, stringToObject, spacesToTabs, adjustSpacesLength, indentLines } = require('./helpers.js');
 
 /*
@@ -106,18 +105,19 @@ class PHPFormatter {
             configFile = configFile.replace(/(\s+)/g, '\\$1');
             cmd.push(`--config=${configFile}`);
         } else {
-            userRules = userRules.replace('@PSR1', '');
-            userRules = userRules.replace('@PSR2', '');
-            userRules = userRules.replace('@Symfony', '');
-            userRules = userRules.replace('@PhpCsFixer', '');
-            userRules = userRules.trim();
-
             let rulesLines = userRules.split('\n');
 
             if (userRules == '') {
                 let rules = `--rules=@${phpStandard}`;
                 cmd.push(rules);
             } else if (rulesLines.length == 1) {
+                
+                userRules = userRules.replace('@PSR1', '');
+                userRules = userRules.replace('@PSR2', '');
+                userRules = userRules.replace('@Symfony', '');
+                userRules = userRules.replace('@PhpCsFixer', '');
+                userRules = userRules.trim();
+                
                 let rules = `--rules=@${phpStandard},${userRules}`;
                 cmd.push(rules);
             } else {
