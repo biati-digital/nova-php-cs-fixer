@@ -11,6 +11,7 @@ This is an extension for Nova to format PHP files on save or by command, it uses
 -   Many options to customize the formatter the way you want
 -   Format on save, using a command or right click
 -   Workspace and Global configuration available
+-   Support for .editorconfig
 
 ## Before Start
 
@@ -30,33 +31,30 @@ This extension provides multiple options to help you customize the formatting of
 
 - **CS Fixer Path** Path to php-cs-fixer, if empty the fixer included with the extension will be used
 
-- **Format on Save** Enable or disable automatic formatting on save
-
 - **PHP Dedicated server and Dedicated server port** PHP is really fast but the start can be a little slow, having a small server runnig will improve the formatting speed, but please try both methods and decide the one you want to use, both are fine.
 
-- **Fixer Rules** Here you can configure the rules to format PHP the way you want, this rules will be global but can be overwritten by using a config file or configuring the extension in your workspace, you can view all available options here [PHP-CS-Fixer](https://github.com/FriendsOfPHP/PHP-CS-Fixer): 
+- **Coding Standard** Select the coding standard you prefer, available options are **"PSR1", "PSR2", "PSR12", "Symfony", "PhpCsFixer", "WordPress", "None"** If you set it to `None` you can add any other standard you want in the Additional Fixer Rules. `WordPress` Fixes are not included with phpcs fixer so if you select `WordPress` as standard the `Additional Fixer Rules` option will be ignored and the formatter will use a defined set of rules for WordPress.
 
-Example of how to add your rules:You can simply add an standard
+- **Additional Fixer Rules** You can configure rules to format PHP the way you want, this rules will be global but can be overwritten by using a config file or configuring the extension in your workspace, you can view all available options here [PHP-CS-Fixer](https://github.com/FriendsOfPHP/PHP-CS-Fixer): 
 
-```
-@PSR2
-```
-
-Or you can configure some more rules in the same line
+You can define your rules like this (one per line)
 
 ```
-@PSR2,full_opening_tag,-blank_line_before_statement
-```
-
-You can add an even more advanced configuration like this (one per line)
-
-```
-@PSR2: true
 array_syntax: { "syntax": "short" }
 array_indentation: true
 ```
 
 - **Global config path** Instead of defining the rules above you can select a global configuration file ".php_cs or .php_cs.dist", the fixer will use your configuration file instead of the global rules. You can also overwritte the global config file by adding a ".php_cs or .php_cs.dist" file in the root of your project that way each project can have it's own rules or if you don't want the file inside your project you can define it in the extension options of the active workspace
+
+- **Format on Save** Enable or disable automatic formatting on save
+
+- **Ignore remote files** Enable or disable automatic formatting of remote files
+
+- **Respect Nova preferences for PHP indentation** If enabled, the formatter will use Nova's tab width and indentetation style for the language PHP which also adds supoprt for .editorconfig
+
+- **Use tabs** Enable to indent lines with tabs instead of spaces
+
+- **Tab width** Specify the number of spaces per indentation-level.
 
 
 #### HTML Options
@@ -64,10 +62,6 @@ array_indentation: true
 - **Format HTML in PHP files** Enable or disable formatting of HTML inside the PHP files.
 
 - **Apply Additional fixes** Addition HTML fixes, more info here [aditional-fixes.md](https://github.com/biati-digital/nova-php-cs-fixer/blob/main/aditional-fixes.md)
-
-- **Use Tabs** Set to true to use tabs or leave unchecked to use spaces
-
-- **Tab Width** Specify the number of spaces per indentation level
 
 - **HTML Rules** Add the rules you want to use to format your HTML, here's an example of the available options:  
 **Note: Please read and make sure you understand the options otherwise do not move anything here, check all the available options here [html-options.md](https://github.com/biati-digital/nova-php-cs-fixer/blob/main/html-options.md)**
@@ -82,6 +76,8 @@ indent_scripts: "keep"
 #### Blade Options
 
 - **Format Blade files on save** Enable or disable format on save for blade files **.blade.php**
+
+- **Respect Nova preferences for Blade indentation** If enabled, the formatter will use Nova's tab width and indentetation style for Blade files which also adds supoprt for .editorconfig
 
 - **Use Tabs** Set to true to use tabs or leave unchecked to use spaces
 
@@ -99,6 +95,8 @@ indent_scripts: "keep"
 #### Twig Options
 
 - **Format Twig files on save** Enable or disable format on save for twig files **.twig**
+
+- **Respect Nova preferences for Twig indentation** If enabled, the formatter will use Nova's tab width and indentetation style for Blade files which also adds supoprt for .editorconfig
 
 - **Use Tabs** Set to true to use tabs or leave unchecked to use spaces
 

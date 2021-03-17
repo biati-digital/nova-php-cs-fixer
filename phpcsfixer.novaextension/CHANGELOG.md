@@ -1,9 +1,14 @@
-## Version 2.0.6
+## Version 3.0.0
 
+- New: Added new option to select the coding standard
+- New: Added WordPress standard with custom rules
 - New: added support for the extension advphp
+- New: Now you can configure the extension to respect Nova's preference for indentation, this also adds support for .editorconfig
+- New: The formatter now updates tabLength and softTabs in the active editor if Nova automatically detects a different and incorrect tabLength
+- New: Let Nova restore the cursor position/selection after formatting
 - Improved: Formatting speed on large PHP files
 - Improved: Indentation in certain files with mixed PHP and HTML
-- Let Nova restore the cursor position/selection after formatting
+- Updated: PHP CS Fixer to 2.18.3
 
 ## Version 2.0.5
 
