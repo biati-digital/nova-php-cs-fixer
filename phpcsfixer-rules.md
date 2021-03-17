@@ -1,10 +1,12 @@
 # Need some help configuring PHPCS Fixer?
 
-As you know this extension uses phpcsfixer under the hood for formatting PHP code, if you try to format your code and you are not able to see any difference then probabaly you did not set your rules correctly so here i'll share how i've configured the extension and the fixer rules that you can configure.
+As you know this extension uses php-cs-fixer under the hood to format PHP code, if you are not able to see any difference when formatting then please make sure that a standard is selected in the extension preferences, if you are using a config file please verify your rules.
 
-## Recommended way to configure phpcs fixer
+The extension works without the need of specifying `Additional fixer rules`, you just need to select a standard and that's it, by default the extension will use the standard PSR-12 but you can change that in the extension preferences.
 
-The best way is to keep your rules in a separate file, that way if later you use another code editor you can keep using the same file. This is really simple, just follow this steps:
+## Using a php-cs-fixer config file
+
+If you want you can keep your rules in a separate file, that way if later you use another code editor you can keep using the same file. This is really simple, just follow this steps:
 
 1.- Create a file in yoiur computer called "**php-cs-fixer.php-cs**" (or any other name you want)
 This file can be in your dropbox or google drive folder
@@ -15,7 +17,7 @@ This file can be in your dropbox or google drive folder
 
 return PhpCsFixer\Config::create()
     ->setRules([
-        '@PSR2' => true,
+        '@PSR12' => true,
         'array_indentation' => true,
         'array_syntax' => ['syntax' => 'short'],
         'combine_consecutive_unsets' => true,
