@@ -1,4 +1,10 @@
+## Version 3.0.2
+
+- Fixed: Blade @Page tag in Blade -> DomPDF
+- Fixed: Blade @if in HTML tag 
+
 ## Version 3.0.1
+
 - Improved: handling previous preferences
 
 ## Version 3.0.0
