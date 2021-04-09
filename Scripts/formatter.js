@@ -70,7 +70,7 @@ class Formatter {
         }
 
         if (formatter) {
-            processed = await formatter.beautify();    
+            processed = await formatter.beautify();
             if (!processed || !processed.content) {
                 log('Unable to format document' + processed.error, true);
                 return;
@@ -80,7 +80,6 @@ class Formatter {
         }
     }
 
-    
     /*
      * Set Formatted value
      * once the content is formatted
@@ -93,13 +92,15 @@ class Formatter {
     async setFormattedValue({ editor, content, processed, range }) {
         if (content == processed.content) {
             log('Nothing changed so the content will not be updated');
-            
+
             if (processed.indentRules) {
                 log('Only updating editor indent');
                 log(processed.indentRules);
                 editor.tabLength = processed.indentRules.tabLength;
                 editor.softTabs = processed.indentRules.softTabs;
             }
+
+            log('Formatting process done');
             return false;
         }
 
@@ -109,13 +110,15 @@ class Formatter {
         await editor.edit((e) => {
             e.replace(documentRange, processed.content);
         });
-        
+
         if (processed.indentRules) {
             log('Updating editor indent');
             log(processed.indentRules);
             editor.tabLength = processed.indentRules.tabLength;
             editor.softTabs = processed.indentRules.softTabs;
         }
+
+        log('Formatting process done');
         return true;
     }
 

@@ -11,7 +11,7 @@ const { log, stringToObject } = require('./helpers.js');
  * @param string
  * @return string
  */
- 
+
 class BladeFormatter {
     constructor(data) {
         let { text, editor, config } = data;
@@ -29,19 +29,19 @@ class BladeFormatter {
 
         return this;
     }
-    
+
     async beautify() {
         log('Starting Blade format');
-    
-        let bladeFormatRules = stringToObject(this.rules);    
+
+        let bladeFormatRules = stringToObject(this.rules);
         bladeFormatRules.indent_size = this.tabLength;
         bladeFormatRules.indent_with_tabs = this.softTabs ? false : true;
-        
+
         let html = this.bladeToHTML(this.text);
-    
+
         log('Converted Blade to HTML');
         log(html);
-        
+
         const bladeHTMLFormatted = new HTMLFormatter({
             text: html,
             config: this.config,
@@ -49,7 +49,7 @@ class BladeFormatter {
         });
         const htmlProcessed = bladeHTMLFormatted.beautify(bladeFormatRules);
         html = this.htmlToBlade(htmlProcessed.content);
-    
+
         // Dedent elseif|else inside if blocks
         let elsereg = /(\s+)?@if(.*)?@endif/gms;
         let m1;
@@ -59,7 +59,7 @@ class BladeFormatter {
                 let fullmatch = m1[0];
                 let initialTabSize = m1[1];
                 let innerMatch = m1[2];
-    
+
                 if (innerMatch.includes('@else')) {
                     let replaceRegex = new RegExp('', 's');
                     let indentedElse = fullmatch.replace(/^.+?@else/gm, (f) => {
@@ -75,10 +75,10 @@ class BladeFormatter {
                 }
             }
         } while (m1);
-        
+
         log('Formatted Blade');
         log(html);
-    
+
         return {
             content: html,
             indentRules: {
@@ -87,8 +87,15 @@ class BladeFormatter {
             }
         };
     }
-    
+
     bladeToHTML(text) {
+        if (text.includes('<style')) {
+            // Fix @page inside style tags
+            text = text.replace(/<style.*>([\s\S]+?)<\/style>/g, function (s, si) {
+                return s.replace(si, si.replace(/@page/g, '.__blade_page'));
+            });
+        }
+
         text = text.replace(/\{\{((?:(?!\}\}).)+)\}\}/g, function (m, c) {
             if (c) {
                 c = c.replace(/(^[ \t]*|[ \t]*$)/g, '');
@@ -98,7 +105,7 @@ class BladeFormatter {
             }
             return '{{' + c + '}}';
         });
-    
+
         text = text.replace(/^[ \t]*@([a-z]+)([^\r\n]*)$/gim, function (m, d, c) {
             if (c) {
                 c = c.replace(/'/g, '&#39;');
@@ -134,17 +141,15 @@ class BladeFormatter {
                     break;
             }
         });
-        
-        
+
         if (text.includes('blade endphp>')) {
             text = text.replace(/<blade php\/>/g, '<phptag>{{--');
             text = text.replace(/<\/blade endphp>/g, '--}}</phptag>');
         }
-        
+
         return text;
     }
-    
-    
+
     htmlToBlade(text) {
         text = text.replace(/^([ \t]*)<\/?blade ([a-z]+)\|?([^>\/]+)?\/?>$/gim, function (m, s, d, c) {
             if (c) {
@@ -169,7 +174,7 @@ class BladeFormatter {
             }
             return '{{' + c + '}}';
         });
-        
+
         if (text.includes('<phptag>')) {
             text = text.replace(/(.+<phptag>)([\s\S])*?<\/phptag>$/gm, function (m, c) {
                 // c is     <phptag>
@@ -177,14 +182,29 @@ class BladeFormatter {
                 const endTag = c.replace('<phptag>', '@endphp');
                 m = m.replace(/<phptag>\{\{--/g, '@php');
                 m = m.replace(/--\}\}<\/phptag>/g, endTag);
-    
+
                 return m;
             });
         }
-        
+
         text = text.replace(/\{\{ --/g, '{{--');
         text = text.replace(/\-- \}\}/g, '--}}');
-        
+        text = text.replace(/\.__blade_page/g, '@page');
+
+        // Fix https://github.com/biati-digital/nova-php-cs-fixer/issues/13
+        // not sure if a bug,
+        text = text.replace(/<blade if\|.+\(([\s\S]+?)\)>/g, function (i, c) {
+            let condition = unescape(c);
+            condition = condition.replace(/\&#95;/gm, '_');
+            condition = condition.replace(/\&quot;/gm, '"');
+            condition = condition.replace(/\&quote;/gm, '"');
+            condition = condition.replace(/\&#39;/gm, "'");
+            condition = condition.replace(/\&#34;/gm, '"');
+            condition = condition.replace(/\&#62;/gm, '>');
+            condition = condition.replace(/\&#60;/gm, '<');
+            return `@if (${condition})`;
+        });
+
         return text;
     }
 }
