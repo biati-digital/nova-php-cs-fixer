@@ -1,6 +1,6 @@
 {
   "name": "biati.phpcsfixer",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "PHP CS Fixer formatter",
   "main": "main.js",
   "scripts": {
@@ -24,7 +24,7 @@
     "nova-npm-executable": "^0.1.1"
   },
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^13.0.1",
+    "@rollup/plugin-commonjs": "^13.0.2",
     "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-node-resolve": "^8.4.0",
     "onchange": "^7.0.2",
