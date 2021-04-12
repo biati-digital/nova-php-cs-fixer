@@ -37,7 +37,7 @@ class PHPFormatter {
             log(`Adjust the initial tab lenght from ${this.initialEditorLenght} to 4`, this.tabLength);
             this.text = adjustSpacesLength(this.text, this.initialEditorLenght, 4);
         }
-        
+
         this.text = this.maybeFormatHTML(this.text);
         this.tmpFile = await this.tmpFile(this.filePath, this.text);
         this.command = await this.getCommand(this.tmpFile);
@@ -49,11 +49,18 @@ class PHPFormatter {
             formatted = await this.formatUsingProcess();
         }
 
-        if (!formatted || !formatted.content) {
+        // If no chages detected by php-cs-fixer
+        if (formatted.content == this.text) {
+            log('There are no changes in the file since the last time it was formatted, stopping process.');
+            return;
+        }
+
+        if (!formatted.content) {
             log('Unable to format document' + formatted.error, true);
             return;
         }
 
+        formatted.content = this.maybeFormatHTML(formatted.content);
         formatted.content = this.maybeApplyAdditionalFixes(formatted.content);
         formatted.content = this.maybeSpacesToTabs(formatted.content);
         formatted.content = this.maybeAdjustSpacesLength(formatted.content);
@@ -96,11 +103,11 @@ class PHPFormatter {
         }
 
         const cmd = [phpPath, csfixerPath, 'fix', filePath];
-        
+
         if (phpStandard == 'WordPress') {
             configFile = nova.path.join(nova.extension.path, 'rules/wordpress.php_cs');
         }
-        
+
         if (configFile) {
             configFile = configFile.replace(/(\s+)/g, '\\$1');
             cmd.push(`--config=${configFile}`);
@@ -111,13 +118,12 @@ class PHPFormatter {
                 let rules = `--rules=@${phpStandard}`;
                 cmd.push(rules);
             } else if (rulesLines.length == 1) {
-                
                 userRules = userRules.replace('@PSR1', '');
                 userRules = userRules.replace('@PSR2', '');
                 userRules = userRules.replace('@Symfony', '');
                 userRules = userRules.replace('@PhpCsFixer', '');
                 userRules = userRules.trim();
-                
+
                 let rules = `--rules=@${phpStandard},${userRules}`;
                 cmd.push(rules);
             } else {
@@ -128,50 +134,16 @@ class PHPFormatter {
                 cmd.push(rules);
             }
         }
-            
-        
 
-        /*if (localConfigFile) {
-            localConfigFile = localConfigFile.replace(/(\s+)/g, '\\$1');
-            cmd.push(`--config=${localConfigFile}`);
-        } else if (globalCSConfig) {
-            globalCSConfig = globalCSConfig.replace(/(\s+)/g, '\\$1');
-            cmd.push(`--config=${globalCSConfig}`);
-        } else {
-            
-            if (phpStandard == 'WordPress') {
-                console.log('set wordpress fixes');
-            }
-            
-            userRules = userRules.replace('@PSR1', '');
-            userRules = userRules.replace('@PSR2', '');
-            userRules = userRules.replace('@Symfony', '');
-            userRules = userRules.replace('@PhpCsFixer', '');
-            userRules = userRules.trim();
-
-            let rulesLines = userRules.split('\n');
-
-            if (userRules == '') {
-                let rules = `--rules=@${phpStandard}`;
-                cmd.push(rules);
-            } else if (rulesLines.length == 1) {
-                let rules = `--rules=@${phpStandard},${userRules}`;
-                cmd.push(rules);
-            } else {
-                let rulesString = stringToObject(userRules);
-                rulesString[`@${phpStandard}`] = 'true';
-                rulesString = JSON.stringify(rulesString);
-                let rules = `--rules='${rulesString}'`;
-                cmd.push(rules);
-            }
-        }*/
+        cmd.push('--using-cache=yes');
+        cmd.push('--diff');
+        //cmd.push('--format=json');
 
         log('Generated command to fix file');
         log(cmd.join(' '));
 
         return cmd;
     }
-    
 
     /*
      * Format on server
@@ -236,10 +208,8 @@ class PHPFormatter {
      * @returns mixed
      */
     async formatUsingProcess() {
-        const cmd = this.command;
-        const filePath = this.tmpFile;
-
         return new Promise((resolve, reject) => {
+            const cmd = this.command;
             const startTime = Date.now();
             const format = { error: false, success: false, content: '' };
             const stdOut = [];
@@ -260,10 +230,44 @@ class PHPFormatter {
             process.onDidExit((status) => {
                 const elapsedTime = Date.now() - startTime;
                 log(`PHP formatted in process took ${elapsedTime}ms`);
+                /*let formattedJson = false;
+                
+                try {
+                    if (stdOut) {
+                        formattedJson = JSON.parse(stdOut);
+                    }
+                } catch (error) {
+                    console.error(error);
+                }
+
+                if (formattedJson && formattedJson.hasOwnProperty('files')) {
+                    if (formattedJson.files.length) {
+                        let phpCode = formattedJson.files[0].diff;
+                        //phpCode = phpCode.replace('-- Original\n+++ New\n@@ @@\n ', '');
+                        //phpCode = phpCode.replace(/\n\s+?\n$/gm, '\n');
+                        //phpCode = phpCode.replace(/^[^\n]/gm, '');
+
+                        format.success = true;
+                        format.content = phpCode;
+
+                        resolve(format);
+                    } else {
+                        format.content = this.text;
+                        resolve(format);
+                    }
+                } else if (stdErr && stdErr.length > 0) {
+                    let errorMessage = stdErr.join(' ');
+                    log('Formatting process error');
+                    log(errorMessage);
+
+                    format.error = errorMessage;
+                    reject(format);
+                }*/
 
                 if (stdOut && stdOut.join('').includes('Fixed all files')) {
                     let phpCode = '';
 
+                    const filePath = this.tmpFile;
                     const file = nova.fs.open(filePath);
                     phpCode = file.read();
                     file.close();
@@ -271,6 +275,10 @@ class PHPFormatter {
                     format.success = true;
                     format.content = phpCode;
 
+                    resolve(format);
+                } else if (!stdOut.length && stdErr.length == 2 && stdErr[1].includes('cache')) {
+                    format.success = true;
+                    format.content = this.text; // return the original code
                     resolve(format);
                 } else if (stdErr && stdErr.length > 0) {
                     let errorMessage = stdErr.join(' ');
@@ -304,7 +312,7 @@ class PHPFormatter {
         });
         return text;
     }
-    
+
     /*
      * PHP CS FIxer temp file
      * a temp file is required to process PHP
@@ -323,8 +331,8 @@ class PHPFormatter {
                 .replace(/[^a-zA-Z]/g, '')
                 .toLowerCase()
                 .trim() + '.php';
-        const tmpFilePath = nova.path.join(nova.extension.workspaceStoragePath, fileID);
 
+        const tmpFilePath = nova.path.join(nova.extension.workspaceStoragePath, fileID);
         const tmpfile = await nova.fs.open(tmpFilePath, 'w');
         await tmpfile.write(content, 'utf-8');
         tmpfile.close();
@@ -334,8 +342,7 @@ class PHPFormatter {
 
         return tmpFilePath;
     }
-    
-    
+
     /*
      * Format inline HTML
      * if enabled in the extension config
@@ -348,18 +355,20 @@ class PHPFormatter {
         if (!this.config.htmltry) {
             return text;
         }
-    
+
         if (this.config.htmladditional) {
             text = this.preFixes(text);
         }
-        
-        const containsHTML = /<(br|basefont|hr|input|source|frame|param|area|meta|!--|col|link|option|base|img|wbr|!DOCTYPE).*?>|<(a|abbr|acronym|address|applet|article|aside|audio|b|bdi|bdo|big|blockquote|body|button|canvas|caption|center|cite|code|colgroup|command|datalist|dd|del|details|dfn|dialog|dir|div|dl|dt|em|embed|fieldset|figcaption|figure|font|footer|form|frameset|head|header|hgroup|h1|h2|h3|h4|h5|h6|html|i|iframe|ins|kbd|keygen|label|legend|li|map|mark|menu|meter|nav|noframes|noscript|object|ol|optgroup|output|p|pre|progress|q|rp|rt|ruby|s|samp|script|section|select|small|span|strike|strong|style|sub|summary|sup|table|tbody|td|textarea|tfoot|th|thead|time|title|tr|track|tt|u|ul|var|video).*?<\/\2>/i.test(text)
-        
+
+        const containsHTML = /<(br|basefont|hr|input|source|frame|param|area|meta|!--|col|link|option|base|img|wbr|!DOCTYPE).*?>|<(a|abbr|acronym|address|applet|article|aside|audio|b|bdi|bdo|big|blockquote|body|button|canvas|caption|center|cite|code|colgroup|command|datalist|dd|del|details|dfn|dialog|dir|div|dl|dt|em|embed|fieldset|figcaption|figure|font|footer|form|frameset|head|header|hgroup|h1|h2|h3|h4|h5|h6|html|i|iframe|ins|kbd|keygen|label|legend|li|map|mark|menu|meter|nav|noframes|noscript|object|ol|optgroup|output|p|pre|progress|q|rp|rt|ruby|s|samp|script|section|select|small|span|strike|strong|style|sub|summary|sup|table|tbody|td|textarea|tfoot|th|thead|time|title|tr|track|tt|u|ul|var|video).*?<\/\2>/i.test(
+            text
+        );
+
         if (!containsHTML) {
             log('The file does not contain HTML, skip HTML formatting');
             return text;
         }
-        
+
         const phpHTMLFormatted = new HTMLFormatter({
             text: text,
             config: this.config,
@@ -372,7 +381,7 @@ class PHPFormatter {
     /*
      * Additional Fixes
      * Apply additional fixes if enabled
-     * and if the current file contains HTML 
+     * and if the current file contains HTML
      *
      * @param string
      * @returns string
@@ -381,15 +390,16 @@ class PHPFormatter {
         if (!this.config.htmltry || !this.config.htmladditional) {
             return text;
         }
-        
-        const containsHTML = /<(br|basefont|hr|input|source|frame|param|area|meta|!--|col|link|option|base|img|wbr|!DOCTYPE).*?>|<(a|abbr|acronym|address|applet|article|aside|audio|b|bdi|bdo|big|blockquote|body|button|canvas|caption|center|cite|code|colgroup|command|datalist|dd|del|details|dfn|dialog|dir|div|dl|dt|em|embed|fieldset|figcaption|figure|font|footer|form|frameset|head|header|hgroup|h1|h2|h3|h4|h5|h6|html|i|iframe|ins|kbd|keygen|label|legend|li|map|mark|menu|meter|nav|noframes|noscript|object|ol|optgroup|output|p|pre|progress|q|rp|rt|ruby|s|samp|script|section|select|small|span|strike|strong|style|sub|summary|sup|table|tbody|td|textarea|tfoot|th|thead|time|title|tr|track|tt|u|ul|var|video).*?<\/\2>/i.test(text)
-        
+
+        const containsHTML = /<(br|basefont|hr|input|source|frame|param|area|meta|!--|col|link|option|base|img|wbr|!DOCTYPE).*?>|<(a|abbr|acronym|address|applet|article|aside|audio|b|bdi|bdo|big|blockquote|body|button|canvas|caption|center|cite|code|colgroup|command|datalist|dd|del|details|dfn|dialog|dir|div|dl|dt|em|embed|fieldset|figcaption|figure|font|footer|form|frameset|head|header|hgroup|h1|h2|h3|h4|h5|h6|html|i|iframe|ins|kbd|keygen|label|legend|li|map|mark|menu|meter|nav|noframes|noscript|object|ol|optgroup|output|p|pre|progress|q|rp|rt|ruby|s|samp|script|section|select|small|span|strike|strong|style|sub|summary|sup|table|tbody|td|textarea|tfoot|th|thead|time|title|tr|track|tt|u|ul|var|video).*?<\/\2>/i.test(
+            text
+        );
+
         if (!containsHTML) {
             log('The file does not contain HTML, skip HTML Additional fixes');
             return text;
         }
-        
-        
+
         let indentChar = this.indentChar;
         let indentSize = this.tabLength;
         let re = /( +).*\?>[\n\r]+?(^<[\S]+.*>[\s\S]*?[\n\r]+?^<\?php)/gm;
@@ -487,7 +497,7 @@ class PHPFormatter {
 
         return text;
     }
-    
+
     /*
      * Convert spaces
      * to tabs if enabled
@@ -499,11 +509,11 @@ class PHPFormatter {
         if (this.softTabs) {
             return text;
         }
-        
+
         log('Converting spaces to tabs ' + this.tabLength);
         return spacesToTabs(text, this.tabLength);
     }
-    
+
     /*
      * Adjust spaces length
      * if needed
@@ -512,14 +522,13 @@ class PHPFormatter {
      * @returns string
      */
     maybeAdjustSpacesLength(text) {
-        if (!this.softTabs || this.tabLength == 4) {
+        if (!this.softTabs || this.tabLength == 4) {
             return text;
         }
-        
+
         log('Readjust spaces from 4 to ' + this.tabLength);
         return adjustSpacesLength(text, 4, this.tabLength);
     }
-    
 
     /*
      * Find local cs fixer config file
@@ -546,7 +555,7 @@ class PHPFormatter {
 
         return found;
     }
-    
+
     /*
      * Use config file
      * check if the formatter should use a config
