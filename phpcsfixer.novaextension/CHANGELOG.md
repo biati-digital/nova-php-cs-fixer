@@ -1,3 +1,7 @@
+## Version 3.1.0
+
+- New: Files are cached by php-cs-fixer to improve formatting speed
+
 ## Version 3.0.2
 
 - Fixed: Blade @Page tag in Blade -> DomPDF

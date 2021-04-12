@@ -61,7 +61,6 @@ class BladeFormatter {
                 let innerMatch = m1[2];
 
                 if (innerMatch.includes('@else')) {
-                    let replaceRegex = new RegExp('', 's');
                     let indentedElse = fullmatch.replace(/^.+?@else/gm, (f) => {
                         if (!bladeFormatRules.indent_with_tabs && f.startsWith(' '.repeat(bladeFormatRules.indent_size))) {
                             f = f.replace(' '.repeat(bladeFormatRules.indent_size), '');
