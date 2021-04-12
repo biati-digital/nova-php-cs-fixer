@@ -60,7 +60,6 @@ class PHPFormatter {
             return;
         }
 
-        formatted.content = this.maybeFormatHTML(formatted.content);
         formatted.content = this.maybeApplyAdditionalFixes(formatted.content);
         formatted.content = this.maybeSpacesToTabs(formatted.content);
         formatted.content = this.maybeAdjustSpacesLength(formatted.content);
@@ -135,9 +134,10 @@ class PHPFormatter {
             }
         }
 
-        cmd.push('--using-cache=yes');
-        cmd.push('--diff');
         //cmd.push('--format=json');
+        cmd.push('--using-cache=yes');
+        cmd.push('--cache-file=' + this.cacheFile());
+        cmd.push('--diff');
 
         log('Generated command to fix file');
         log(cmd.join(' '));
@@ -341,6 +341,26 @@ class PHPFormatter {
         log(tmpFilePath);
 
         return tmpFilePath;
+    }
+
+    /**
+     * Get php-cs-fixer cache file path
+     *
+     * @return string
+     */
+    cacheFile() {
+        let file = nova.path.join(nova.extension.globalStoragePath, 'php', '.php_cs.cache');
+
+        try {
+            nova.fs.open(file, 'x');
+        } catch (error) {
+            log('Using existing cache file');
+        }
+
+        file = file.replace(/([ "#&%'$`\\])/g, '\\$1');
+        log(`Cache file path is ${file}`);
+
+        return file;
     }
 
     /*
