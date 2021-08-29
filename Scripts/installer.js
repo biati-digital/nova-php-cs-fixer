@@ -1,7 +1,7 @@
-async function copyServiceFiles(verion) {
+async function copyServiceFiles(version) {
     const fixerPath = nova.path.join(nova.extension.path, 'php');
     const dependencyDir = nova.path.join(nova.extension.globalStoragePath, 'php');
-    const phpcsfixerFile = 'php-cs-fixer-' + verion;
+    const phpcsfixerFile = 'php-cs-fixer-' + version;
     const phpcsfixerFilePath = nova.path.join(dependencyDir, phpcsfixerFile);
     let exists = nova.fs.stat(dependencyDir);
 
@@ -39,12 +39,15 @@ async function makeFileExecutable(file) {
     });
 }
 
-async function extensionInstaller(verion, disposable, logFn = null) {
+async function extensionInstaller(version, disposable) {
     try {
-        await copyServiceFiles(verion);
+        await copyServiceFiles(version);
     } catch (err) {
         throw err;
     }
 }
 
-module.exports = extensionInstaller;
+module.exports = {
+    copyServiceFiles,
+    extensionInstaller
+};
