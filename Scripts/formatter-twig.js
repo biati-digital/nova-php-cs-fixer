@@ -7,12 +7,13 @@ const { log, stringToObject } = require('./helpers.js');
  * https://github.com/prettydiff/prettydiff
  *
  */
- 
+
 class TwigFormatter {
     constructor(data) {
         let { text, editor, config } = data;
         this.config = config;
         this.text = text;
+        this.formatRules = stringToObject(config.twigrules);
         this.rules = config.twigrules;
         this.tabLength = config.twigTabWidth;
         this.softTabs = config.twigUseTabs ? false : true;
@@ -24,20 +25,23 @@ class TwigFormatter {
 
         return this;
     }
-    
+
     async beautify() {
         log('Starting Twig format');
 
-        let source = this.text;
         let output = '',
             options = prettydiff.options;
         options.mode = 'beautify';
         options.language = 'twig';
         options.preserve = 3;
-        options.source = source;
         options.indent_char = this.softTabs ? ' ' : '\t';
         options.indent_size = this.softTabs ? this.tabLength : 0;
 
+        if (this.formatRules) {
+            options = Object.assign(options, this.formatRules);
+        }
+
+        options.source = this.text;
         log('Twig options');
         log(options);
 
@@ -50,7 +54,7 @@ class TwigFormatter {
 
         log('Twig formatted text');
         log(output);
-    
+
         return {
             content: output,
             indentRules: {
