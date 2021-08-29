@@ -16,6 +16,8 @@ $exec = shell_exec($command);
 $fixed_correctly = (strpos($exec, 'Fixed all files') !== false);
 
 echo json_encode([
+    'apple' => true,
+    'exec' => $exec,
     'success' => true,
     'command' => $command,
     'command_errors' => $fixed_correctly ? false : $exec,
