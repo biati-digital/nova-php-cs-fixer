@@ -1,6 +1,6 @@
 {
   "name": "biati.phpcsfixer",
-  "version": "3.1.0",
+  "version": "4.0.0",
   "description": "PHP CS Fixer formatter",
   "main": "main.js",
   "scripts": {
@@ -20,14 +20,14 @@
   "dependencies": {
     "esprima-fb": "^15001.1001.0-dev-harmony-fb",
     "fast-diff": "^1.2.0",
-    "js-beautify": "^1.13.0",
+    "js-beautify": "^1.14.0",
     "nova-npm-executable": "^0.1.1"
   },
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^13.1.0",
+    "@rollup/plugin-commonjs": "^19.0.0",
     "@rollup/plugin-json": "^4.1.0",
-    "@rollup/plugin-node-resolve": "^8.4.0",
+    "@rollup/plugin-node-resolve": "^13.0.0",
     "onchange": "^7.0.2",
-    "rollup": "^2.29.0"
+    "rollup": "^2.48.0"
   }
 }
