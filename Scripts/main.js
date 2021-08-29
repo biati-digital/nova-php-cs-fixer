@@ -1,10 +1,10 @@
-const extensionInstaller = require('./installer.js');
+const { extensionInstaller, copyServiceFiles } = require('./installer.js');
 const Server = require('./server.js');
 const Formatter = require('./formatter.js');
 const compositeDisposable = new CompositeDisposable();
 const serverInstance = new Server('PHP CS Fixer');
 const { log, cleanDirectory } = require('./helpers.js');
-const phpcsfixerVerion = '2.18.3';
+const phpcsfixerVerion = '2.19.2';
 
 exports.activate = function () {
     const formater = new Formatter(serverInstance, phpcsfixerVerion);
@@ -17,7 +17,14 @@ exports.activate = function () {
         return editor.onWillSave(formater.process.bind(formater));
     });
 
-    extensionInstaller(phpcsfixerVerion, compositeDisposable, log)
+    nova.config.onDidChange(nova.extension.identifier + '.fixerv3', (val) => {
+        if (val) {
+            log('Installing php-cs-fixer-3.0.2');
+            copyServiceFiles('3.0.2');
+        }
+    });
+
+    extensionInstaller(phpcsfixerVerion, compositeDisposable)
         .catch((err) => {
             log('Failed to activate PHP Fixer', true);
             log(err, true);
