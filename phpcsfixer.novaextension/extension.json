@@ -3,7 +3,7 @@
   "name": "PHP CS Fixer",
   "organization": "biati",
   "description": "Automatically format PHP files using php-cs-fixer with HTML, Blade and Twig support.",
-  "version": "3.1.0",
+  "version": "4.0.0",
   "repository": "https://github.com/biati-digital/nova-php-cs-fixer",
   "bugs": "https://github.com/biati-digital/nova-php-cs-fixer/issues",
   "funding": "https://www.paypal.com/paypalme/bdigital9816/0usd",
@@ -60,6 +60,14 @@
           "default": false
         },
         {
+          "key": "biati.phpcsfixer.fixerv3",
+          "title": "Enable PHP CS Fixer 3",
+          "description": "V2 is no longer maintained, if you have a custom configuration file you need to check the upgrade guide to make sure V3 works with your configuration. If you don't have a custom configuration you can enable this option without problems. V2 will be removed in the near future. Click the icon at the right to learn how to upgrade your config file. This option does not work if you've configured a custom PHP CS Fixer path.",
+          "type": "boolean",
+          "default": false,
+          "link": "https://github.com/biati-digital/nova-php-cs-fixer/blob/main/phpcsfixer-rules.md",
+        },
+        {
           "key": "biati.phpcsfixer.standard",
           "title": "Coding Standard",
           "description": "Select the coding standard, you can apply additional rules below.",
@@ -77,7 +85,7 @@
         {
           "key": "biati.phpcsfixer.phpcsconfig",
           "title": "Global config path",
-          "description": "Instead of defining rules you can use a global .php_cs file for all the projects, if you add a .php_cs in the root of your project it will be used instead of the global configuration. The rules above will be ignored if the configuration file is used.",
+          "description": "Instead of defining rules you can use a global .php_cs or .php_cs.dist or .php-cs-fixer.php or .php-cs-fixer.dist.php file for all the projects, if you add a .php_cs in the root of your project it will be used instead of the global configuration. The rules above will be ignored if the configuration file is used.",
           "type": "path",
           "default": ""
         },
@@ -87,6 +95,13 @@
           "description": "Enable to automatically format on file save",
           "type": "boolean",
           "default": true
+        },
+        {
+          "key": "biati.phpcsfixer.onlyiflocalconfigfile",
+          "title": "Format on save only if workspace has a config file",
+          "description": "Only format on save if the workspace contains a configuration file for example: .php_cs or .php_cs.dist or .php-cs-fixer.php or .php-cs-fixer.dist.php. You can still format the file doing right click in the code and choose Format with PHP CS Fixer",
+          "type": "boolean",
+          "default": false
         },
         {
           "key": "biati.phpcsfixer.ignoreremote",
@@ -254,11 +269,26 @@
       "type": "section",
       "children": [
         {
+            "key": "biati.phpcsfixer.fixerv3",
+            "title": "Enable PHP CS Fixer 3",
+            "description": "V2 is no longer maintained but if you have a custom configuration you need to check the upgrade guide to make sure V3 works with your configuration. If you don't have a cstom configuration you can enable it without problems. V2 will be removed in the near future.",
+            "type": "boolean",
+            "default": false,
+            "link": "https://github.com/FriendsOfPHP/PHP-CS-Fixer/blob/v3.0.0/UPGRADE-v3.md",
+        },
+        {
           "key": "biati.phpcsfixer.onsave",
           "title": "Format on save",
           "description": "Enable to automatically format on file save",
           "type": "boolean",
           "default": true
+        },
+        {
+          "key": "biati.phpcsfixer.onlyiflocalconfigfile",
+          "title": "Format on save only if workspace has a config file",
+          "description": "Only format on save if the workspace contains a configuration file for example: .php_cs or .php_cs.dist or .php-cs-fixer.php or .php-cs-fixer.dist.php. You can still format the file doing right click in the code and choose Format with PHP CS Fixer",
+          "type": "boolean",
+          "default": false
         },
         {
           "key": "biati.phpcsfixer.standard",
