@@ -8,10 +8,35 @@ The extension works without the need of specifying `Additional fixer rules`, you
 
 If you want you can keep your rules in a separate file, that way if later you use another code editor you can keep using the same file. This is really simple, just follow this steps:
 
-1.- Create a file in yoiur computer called "**php-cs-fixer.php-cs**" (or any other name you want)
+1.- Create a file in yoiur computer called "**php-cs-fixer.php-cs**" (or .php_cs or .php_cs.dist or .php-cs-fixer.php or .php-cs-fixer.dist.php)
 This file can be in your dropbox or google drive folder
 
 2.- Add the following code to the file. (Modify as you need)
+
+### If you are using php-cs-fixer-3.x (You can enable it in the extension preferences "Enable PHP CS Fixer 3")
+
+If you already have a configuration file for a previous version of php-cs-fixer please take a look at the [Upgrade Guide](https://github.com/FriendsOfPHP/PHP-CS-Fixer/blob/v3.0.0/UPGRADE-v3.md) as some option have changed.
+
+```php
+<?php
+
+$config = new PhpCsFixer\Config();
+return $config
+->setRiskyAllowed(true)
+->setRules([
+    '@PSR12' => true,
+    'array_indentation' => true,
+    'array_syntax' => ['syntax' => 'short'],
+    //Other rules here...
+])
+->setLineEnding("\n");
+
+```
+
+
+
+### If you are using an older version of php-cs-fixer-2.x (PLEASE NOTE: V2 is no longer maintained and will be removed in the near future. Make sure to enable "Enable PHP CS Fixer 3" in the extension preferences and create the file using the correct config.)
+
 ```php
 <?php
 
@@ -20,101 +45,14 @@ return PhpCsFixer\Config::create()
         '@PSR12' => true,
         'array_indentation' => true,
         'array_syntax' => ['syntax' => 'short'],
-        'combine_consecutive_unsets' => true,
-        'method_separation' => false,
-        'no_multiline_whitespace_before_semicolons' => true,
-        'single_quote' => true,
-        'binary_operator_spaces' => [
-            'align_double_arrow' => false,
-            'align_equals' => false,
-        ],
-        // 'blank_line_after_opening_tag' => true,
-        // 'blank_line_before_return' => true,
-        'braces' => [
-            'allow_single_line_closure' => true,
-        ],
-        // 'cast_spaces' => true,
-        // 'class_definition' => array('singleLine' => true),
-        'concat_space' => ['spacing' => 'one'],
-        'declare_equal_normalize' => true,
-        'function_typehint_space' => true,
-        'hash_to_slash_comment' => true,
-        'include' => true,
-        'lowercase_cast' => true,
-        // 'native_function_casing' => true,
-        // 'new_with_braces' => true,
-        // 'no_blank_lines_after_class_opening' => true,
-        // 'no_blank_lines_after_phpdoc' => true,
-        // 'no_empty_comment' => true,
-        // 'no_empty_phpdoc' => true,
-        // 'no_empty_statement' => true,
-        /* 'no_extra_consecutive_blank_lines' => [
-            'curly_brace_block',
-            'extra',
-            'parenthesis_brace_block',
-            'square_brace_block',
-            'throw',
-            'use',
-        ], */
-        'no_extra_blank_lines' => [
-            'curly_brace_block',
-            'parenthesis_brace_block',
-            'square_brace_block',
-            'throw',
-            'use',
-        ],
-        // 'no_leading_import_slash' => true,
-        // 'no_leading_namespace_whitespace' => true,
-        // 'no_mixed_echo_print' => array('use' => 'echo'),
-        'no_multiline_whitespace_around_double_arrow' => true,
-        // 'no_short_bool_cast' => true,
-        // 'no_singleline_whitespace_before_semicolons' => true,
-        'no_spaces_around_offset' => true,
-        // 'no_trailing_comma_in_list_call' => true,
-        // 'no_trailing_comma_in_singleline_array' => true,
-        // 'no_unneeded_control_parentheses' => true,
-        // 'no_unused_imports' => true,
-        'no_whitespace_before_comma_in_array' => true,
-        'no_whitespace_in_blank_line' => true,
-        // 'normalize_index_brace' => true,
-        'object_operator_without_whitespace' => true,
-        // 'php_unit_fqcn_annotation' => true,
-        // 'phpdoc_align' => true,
-        // 'phpdoc_annotation_without_dot' => true,
-        'phpdoc_indent' => true,
-        'phpdoc_inline_tag' => true,
-        // 'phpdoc_no_access' => true,
-        'phpdoc_no_alias_tag' => true,
-        // 'phpdoc_no_empty_return' => true,
-        // 'phpdoc_no_package' => true,
-        // 'phpdoc_no_useless_inheritdoc' => true,
-        // 'phpdoc_return_self_reference' => true,
-        // 'phpdoc_scalar' => true,
-        // 'phpdoc_separation' => true,
-        // 'phpdoc_single_line_var_spacing' => true,
-        // 'phpdoc_summary' => true,
-        // 'phpdoc_to_comment' => true,
-        // 'phpdoc_trim' => true,
-        // 'phpdoc_types' => true,
-        // 'phpdoc_var_without_name' => true,
-        // 'pre_increment' => true,
-        // 'return_type_declaration' => true,
-        // 'self_accessor' => true,
-        // 'short_scalar_cast' => true,
-        'single_blank_line_before_namespace' => true,
-        // 'single_class_element_per_statement' => true,
-        // 'space_after_semicolon' => true,
-        // 'standardize_not_equals' => true,
-        'ternary_operator_spaces' => true,
-        // 'trailing_comma_in_multiline_array' => true,
-        'trim_array_spaces' => true,
-        'unary_operator_spaces' => true,
-        'whitespace_after_comma_in_array' => true,
+        //Other rules here...
     ])
     ->setLineEnding("\n");
 ```
 
 By default phpcs fixer uses spaces, if you want to use tabs you can define in your rules `->setIndent("\t")` just before `->setLineEnding("\n");`
+
+You can see all available rules [here](https://github.com/FriendsOfPHP/PHP-CS-Fixer/blob/3.0/doc/rules/index.rst) or if you prefer [here](https://mlocati.github.io/php-cs-fixer-configurator/#version:3.0)
 
 
 3.- Go to the extension preferences and select the file you just created and that's it
