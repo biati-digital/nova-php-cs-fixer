@@ -4,7 +4,7 @@ function log(message, force) {
     const config = extensionConfig();
     if (nova.inDevMode() || config.log || force) {
         if (typeof message == 'object') {
-            message = JSON.stringify(message);
+            message = JSON.stringify(message, null, ' ');
         }
         console.log(message);
     }
@@ -14,7 +14,7 @@ function stringToObject(str) {
     if (!str) {
         return {};
     }
-    
+
     const rulesLines = str.split('\n');
     const rulesObj = {};
 
@@ -44,6 +44,7 @@ function stringToObject(str) {
 
         ruleValue = ruleValue == 'true' ? true : ruleValue;
         ruleValue = ruleValue == 'false' ? false : ruleValue;
+        ruleValue = isNumeric(ruleValue) ? parseInt(ruleValue) : ruleValue;
         rulesObj[ruleName] = ruleValue;
     });
 
@@ -58,8 +59,8 @@ function adjustSpacesLength(text, from = 4, spaces) {
         const leadingSpaces = /^\s*/.exec(line)[0];
 
         if (leadingSpaces) {
-            const replace = "[ ]{"+ from +"}|\t";
-            const re = new RegExp(replace, 'g');            
+            const replace = '[ ]{' + from + '}|\t';
+            const re = new RegExp(replace, 'g');
             //const newLeadingSpaces = leadingSpaces.replace(/[ ]{4}|\t/g, ' '.repeat(spaces));
             const newLeadingSpaces = leadingSpaces.replace(re, ' '.repeat(spaces));
             lines[i] = newLeadingSpaces + line.replace(/^\s+/, '');
@@ -126,7 +127,6 @@ function tabsToSpaces(data, tabSize = 4) {
 
     return data;
 }
-
 
 function indentLines(before, text, indentChar, indentSize) {
     let indentMore = false;
@@ -228,6 +228,14 @@ function cleanDirectory(folderPath, extension = '') {
     } catch (error) {
         console.error(error);
     }
+}
+
+function isNumeric(str) {
+    if (typeof str != 'string') return false; // we only process strings!
+    return (
+        !isNaN(str) && // use type coercion to parse the _entirety_ of the string (`parseFloat` alone does not do this)...
+        !isNaN(parseFloat(str))
+    ); // ...and ensure strings of whitespace fail
 }
 
 module.exports = {
