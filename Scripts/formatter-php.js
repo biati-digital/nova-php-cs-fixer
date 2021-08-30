@@ -23,21 +23,38 @@ class PHPFormatter {
         this.localCSConfig = this.findLocalCSConfig();
         this.phpcsfixerVersion = config.phpcsfixerVersion;
         this.initialEditorLenght = editor.tabLength;
+        this.processFormat = true;
 
         if (config.phpRespectNova) {
             this.tabLength = editor.tabLength;
             this.softTabs = editor.softTabs;
         }
 
+        if (config.onlyiflocalconfigfile && !this.localCSConfig) {
+            log('Enabled "Format on save only if workspace has a config file" and the workspaces does not have a configuration file, process will stop.');
+            this.processFormat = false;
+        }
+
+        // Temp code to enable v3
+        if (config.fixerv3 && config.csfixerpath == '') {
+            this.phpcsfixerVersion = '3.1.0';
+        }
+
         return this;
     }
 
     async beautify() {
+        if (!this.processFormat) {
+            log('The format process was stopped.');
+            return;
+        }
+
         if (this.softTabs && this.initialEditorLenght !== this.tabLength) {
             log(`Adjust the initial tab lenght from ${this.initialEditorLenght} to 4`, this.tabLength);
             this.text = adjustSpacesLength(this.text, this.initialEditorLenght, 4);
         }
 
+        const originalCode = this.text;
         this.text = this.maybeFormatHTML(this.text);
         this.tmpFile = await this.tmpFile(this.filePath, this.text);
         this.command = await this.getCommand(this.tmpFile);
@@ -50,7 +67,7 @@ class PHPFormatter {
         }
 
         // If no chages detected by php-cs-fixer
-        if (formatted.content == this.text) {
+        if (formatted.content == originalCode) {
             log('There are no changes in the file since the last time it was formatted, stopping process.');
             return;
         }
@@ -87,6 +104,7 @@ class PHPFormatter {
         let localConfigFile = this.localCSConfig;
         let phpStandard = config.standard;
         let configFile = this.getConfigFile();
+        let cacheFile = this.cacheFile();
 
         if (!phpPath) {
             phpPath = 'php';
@@ -97,9 +115,13 @@ class PHPFormatter {
 
         if (config.server) {
             phpPath = phpPath.replace(/(\s+)/g, '\\$1');
-            csfixerPath = csfixerPath.replace(/(\s+)/g, '\\$1');
-            filePath = filePath.replace(/(\s+)/g, '\\$1');
+            //csfixerPath = csfixerPath.replace(/(\s+)/g, '\\$1');
+            //filePath = filePath.replace(/(\s+)/g, '\\$1');
+            csfixerPath = '"' + csfixerPath +'"';
+            filePath = '"' + filePath +'"';
+            cacheFile = cacheFile.replace(/(\s+)/g, '\\$1');
         }
+
 
         const cmd = [phpPath, csfixerPath, 'fix', filePath];
 
@@ -107,37 +129,60 @@ class PHPFormatter {
             configFile = nova.path.join(nova.extension.path, 'rules/wordpress.php_cs');
         }
 
+        if (userRules) {
+            userRules = userRules.replace(/[\u2018\u2019]/g, '"').replace(/[\u201C\u201D]/g, '"').replace(/[“”‘’]/g, '"');
+        }
+
         if (configFile) {
-            configFile = configFile.replace(/(\s+)/g, '\\$1');
+            if (config.server) {
+                configFile = configFile.replace(/(\s+)/g, '\\$1');
+            }
             cmd.push(`--config=${configFile}`);
         } else {
             let rulesLines = userRules.split('\n');
 
             if (userRules == '') {
-                let rules = `--rules=@${phpStandard}`;
-                cmd.push(rules);
-            } else if (rulesLines.length == 1) {
+                cmd.push(`--rules=@${phpStandard}`);
+            } else if (rulesLines.length == 1 && !userRules.includes('{')) {
                 userRules = userRules.replace('@PSR1', '');
                 userRules = userRules.replace('@PSR2', '');
                 userRules = userRules.replace('@Symfony', '');
                 userRules = userRules.replace('@PhpCsFixer', '');
                 userRules = userRules.trim();
 
-                let rules = `--rules=@${phpStandard},${userRules}`;
-                cmd.push(rules);
+                log('Additional user rules');
+                log(userRulesObj);
+
+                cmd.push(`--rules=@${phpStandard},${userRules}`);
             } else {
-                let rulesString = stringToObject(userRules);
-                rulesString[`@${phpStandard}`] = 'true';
+                let rulesString = {};
+                rulesString[`@${phpStandard}`] = true;
+                let userRulesObj = {};
+
+                try {
+                    userRulesObj = stringToObject(userRules)
+                } catch (error) {
+                    log(error, true);
+                }
+
+                log('Additional user rules');
+                log(userRulesObj);
+
+                rulesString = Object.assign(rulesString, userRulesObj);
                 rulesString = JSON.stringify(rulesString);
-                let rules = `--rules='${rulesString}'`;
-                cmd.push(rules);
+
+                if (config.server) {
+                    cmd.push(`--rules='${rulesString}'`);
+                } else {
+                    cmd.push(`--rules=${rulesString}`);
+                }
             }
         }
 
         //cmd.push('--format=json');
         cmd.push('--using-cache=yes');
-        cmd.push('--cache-file=' + this.cacheFile());
-        cmd.push('--diff');
+        cmd.push('--cache-file=' + cacheFile);
+        //cmd.push('--diff');
 
         log('Generated command to fix file');
         log(cmd.join(' '));
@@ -189,7 +234,7 @@ class PHPFormatter {
 
         if (typeof response == 'object' && response.success) {
             log('Server response');
-            log(JSON.stringify(response));
+            log(response);
         }
 
         const elapsedTime = Date.now() - startTime;
@@ -230,41 +275,15 @@ class PHPFormatter {
             process.onDidExit((status) => {
                 const elapsedTime = Date.now() - startTime;
                 log(`PHP formatted in process took ${elapsedTime}ms`);
-                /*let formattedJson = false;
-                
-                try {
-                    if (stdOut) {
-                        formattedJson = JSON.parse(stdOut);
-                    }
-                } catch (error) {
-                    console.error(error);
-                }
 
-                if (formattedJson && formattedJson.hasOwnProperty('files')) {
-                    if (formattedJson.files.length) {
-                        let phpCode = formattedJson.files[0].diff;
-                        //phpCode = phpCode.replace('-- Original\n+++ New\n@@ @@\n ', '');
-                        //phpCode = phpCode.replace(/\n\s+?\n$/gm, '\n');
-                        //phpCode = phpCode.replace(/^[^\n]/gm, '');
+                console.log(stdOut.join(''));
 
-                        format.success = true;
-                        format.content = phpCode;
-
-                        resolve(format);
-                    } else {
-                        format.content = this.text;
-                        resolve(format);
-                    }
-                } else if (stdErr && stdErr.length > 0) {
-                    let errorMessage = stdErr.join(' ');
-                    log('Formatting process error');
-                    log(errorMessage);
-
-                    format.error = errorMessage;
+                if (stdOut.join('').includes('Fatal error')) {
+                    log('FATAL ERROR', true);
+                    log(stdOut);
+                    format.error = stdOut.join('');
                     reject(format);
-                }*/
-
-                if (stdOut && stdOut.join('').includes('Fixed all files')) {
+                } else if (stdOut && stdOut.join('').includes('Fixed all files')) {
                     let phpCode = '';
 
                     const filePath = this.tmpFile;
@@ -277,6 +296,7 @@ class PHPFormatter {
 
                     resolve(format);
                 } else if (!stdOut.length && stdErr.length == 2 && stdErr[1].includes('cache')) {
+
                     format.success = true;
                     format.content = this.text; // return the original code
                     resolve(format);
@@ -349,7 +369,7 @@ class PHPFormatter {
      * @return string
      */
     cacheFile() {
-        let file = nova.path.join(nova.extension.globalStoragePath, 'php', '.php_cs.cache');
+        let file = nova.path.join(nova.extension.globalStoragePath, 'php', '.php-cs-fixer.cache');
 
         try {
             nova.fs.open(file, 'x');
@@ -357,7 +377,7 @@ class PHPFormatter {
             log('Using existing cache file');
         }
 
-        file = file.replace(/([ "#&%'$`\\])/g, '\\$1');
+        //file = file.replace(/([ "#&%'$`\\])/g, '\\$1');
         log(`Cache file path is ${file}`);
 
         return file;
@@ -380,9 +400,10 @@ class PHPFormatter {
             text = this.preFixes(text);
         }
 
-        const containsHTML = /<(br|basefont|hr|input|source|frame|param|area|meta|!--|col|link|option|base|img|wbr|!DOCTYPE).*?>|<(a|abbr|acronym|address|applet|article|aside|audio|b|bdi|bdo|big|blockquote|body|button|canvas|caption|center|cite|code|colgroup|command|datalist|dd|del|details|dfn|dialog|dir|div|dl|dt|em|embed|fieldset|figcaption|figure|font|footer|form|frameset|head|header|hgroup|h1|h2|h3|h4|h5|h6|html|i|iframe|ins|kbd|keygen|label|legend|li|map|mark|menu|meter|nav|noframes|noscript|object|ol|optgroup|output|p|pre|progress|q|rp|rt|ruby|s|samp|script|section|select|small|span|strike|strong|style|sub|summary|sup|table|tbody|td|textarea|tfoot|th|thead|time|title|tr|track|tt|u|ul|var|video).*?<\/\2>/i.test(
-            text
-        );
+        const containsHTML =
+            /<(br|basefont|hr|input|source|frame|param|area|meta|!--|col|link|option|base|img|wbr|!DOCTYPE).*?>|<(a|abbr|acronym|address|applet|article|aside|audio|b|bdi|bdo|big|blockquote|body|button|canvas|caption|center|cite|code|colgroup|command|datalist|dd|del|details|dfn|dialog|dir|div|dl|dt|em|embed|fieldset|figcaption|figure|font|footer|form|frameset|head|header|hgroup|h1|h2|h3|h4|h5|h6|html|i|iframe|ins|kbd|keygen|label|legend|li|map|mark|menu|meter|nav|noframes|noscript|object|ol|optgroup|output|p|pre|progress|q|rp|rt|ruby|s|samp|script|section|select|small|span|strike|strong|style|sub|summary|sup|table|tbody|td|textarea|tfoot|th|thead|time|title|tr|track|tt|u|ul|var|video).*?<\/\2>/i.test(
+                text
+            );
 
         if (!containsHTML) {
             log('The file does not contain HTML, skip HTML formatting');
@@ -411,9 +432,10 @@ class PHPFormatter {
             return text;
         }
 
-        const containsHTML = /<(br|basefont|hr|input|source|frame|param|area|meta|!--|col|link|option|base|img|wbr|!DOCTYPE).*?>|<(a|abbr|acronym|address|applet|article|aside|audio|b|bdi|bdo|big|blockquote|body|button|canvas|caption|center|cite|code|colgroup|command|datalist|dd|del|details|dfn|dialog|dir|div|dl|dt|em|embed|fieldset|figcaption|figure|font|footer|form|frameset|head|header|hgroup|h1|h2|h3|h4|h5|h6|html|i|iframe|ins|kbd|keygen|label|legend|li|map|mark|menu|meter|nav|noframes|noscript|object|ol|optgroup|output|p|pre|progress|q|rp|rt|ruby|s|samp|script|section|select|small|span|strike|strong|style|sub|summary|sup|table|tbody|td|textarea|tfoot|th|thead|time|title|tr|track|tt|u|ul|var|video).*?<\/\2>/i.test(
-            text
-        );
+        const containsHTML =
+            /<(br|basefont|hr|input|source|frame|param|area|meta|!--|col|link|option|base|img|wbr|!DOCTYPE).*?>|<(a|abbr|acronym|address|applet|article|aside|audio|b|bdi|bdo|big|blockquote|body|button|canvas|caption|center|cite|code|colgroup|command|datalist|dd|del|details|dfn|dialog|dir|div|dl|dt|em|embed|fieldset|figcaption|figure|font|footer|form|frameset|head|header|hgroup|h1|h2|h3|h4|h5|h6|html|i|iframe|ins|kbd|keygen|label|legend|li|map|mark|menu|meter|nav|noframes|noscript|object|ol|optgroup|output|p|pre|progress|q|rp|rt|ruby|s|samp|script|section|select|small|span|strike|strong|style|sub|summary|sup|table|tbody|td|textarea|tfoot|th|thead|time|title|tr|track|tt|u|ul|var|video).*?<\/\2>/i.test(
+                text
+            );
 
         if (!containsHTML) {
             log('The file does not contain HTML, skip HTML Additional fixes');
@@ -563,7 +585,7 @@ class PHPFormatter {
         }
 
         let found = false;
-        const csconf = ['.php_cs.dist', '.php_cs'];
+        const csconf = ['.php_cs.dist', '.php_cs', '.php-cs-fixer.php', '.php-cs-fixer.dist.php'];
         csconf.forEach((name) => {
             const cfpath = nova.path.join(nova.workspace.path, name);
             const hasConfig = nova.fs.stat(cfpath);
