@@ -3,8 +3,8 @@
 **IMPORTANT:** This update includes php-cs-fixer 3.0.2 (need to be enabled in the extension preferences). If you have a custom configuration please check the [Upgrade Guide](https://github.com/FriendsOfPHP/PHP-CS-Fixer/blob/v3.0.0/UPGRADE-v3.md). php-cs-fixer-2-x is no longer maintained and will be removed in the near future so make sure to enable v3.
 
 - Updated: PHP CS Fixer to 2.19.2 (will soon be removed as it's no longer maintained)
-- Added: PHP CS Fixer 3.0.2. For now you need to enable V3 in the extension preferences and test your configuration, V2 will be removed in the near future so you have time to make the change
-- Added: New option "Enable PHP CS Fixer 3"
+- Added: PHP CS Fixer 3.1.0 River For now you need to enable V3 in the extension preferences and test your configuration, V2 will be removed in the near future so you have time to make the change
+- Added: New option "Enable PHP CS Fixer 3" You might need restart
 - Added: New option "Format on save only if workspace has a config file"
 - Fixed: Twig not respecting custom user rules
 - Fixed: PHP CS Fixer additional rules not working
