@@ -19,8 +19,8 @@ exports.activate = function () {
 
     nova.config.onDidChange(nova.extension.identifier + '.fixerv3', (val) => {
         if (val) {
-            log('Installing php-cs-fixer-3.0.2');
-            copyServiceFiles('3.0.2');
+            log('Installing php-cs-fixer-3.1.0');
+            copyServiceFiles('3.1.0');
         }
     });
 
