@@ -61,7 +61,7 @@
         },
         {
           "key": "biati.phpcsfixer.fixerv3",
-          "title": "Enable PHP CS Fixer 3",
+          "title": "Enable PHP CS Fixer 3 (You might need restart)",
           "description": "V2 is no longer maintained, if you have a custom configuration file you need to check the upgrade guide to make sure V3 works with your configuration. If you don't have a custom configuration you can enable this option without problems. V2 will be removed in the near future. Click the icon at the right to learn how to upgrade your config file. This option does not work if you've configured a custom PHP CS Fixer path.",
           "type": "boolean",
           "default": false,
