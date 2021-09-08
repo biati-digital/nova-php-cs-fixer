@@ -86,7 +86,7 @@ class Formatter {
      * set the editor content and cursor
      * position if required
      * Code by alexanderweiss from the prettier extension
-     * https://github.com/alexanderweiss/nova-prettier
+     * https://github.com/biati-digital/nova-php-cs-fixer
      *
      */
     async setFormattedValue({ editor, content, processed, range }) {
