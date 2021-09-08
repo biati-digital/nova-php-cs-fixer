@@ -1,3 +1,8 @@
+## Version 4.0.1
+
+- New: New extension icon
+- Updated: README
+
 ## Version 4.0.0
 
 **IMPORTANT:** This update includes php-cs-fixer 3.0.2 (need to be enabled in the extension preferences). If you have a custom configuration please check the [Upgrade Guide](https://github.com/FriendsOfPHP/PHP-CS-Fixer/blob/v3.0.0/UPGRADE-v3.md). php-cs-fixer-2-x is no longer maintained and will be removed in the near future so make sure to enable v3.
