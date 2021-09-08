@@ -1,6 +1,6 @@
 {
   "name": "biati.phpcsfixer",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "description": "PHP CS Fixer formatter",
   "main": "main.js",
   "scripts": {
@@ -9,14 +9,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/alexanderweiss/nova-prettier.git"
+    "url": "git+https://github.com/biati-digital/nova-php-cs-fixer.git"
   },
   "author": "biati",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/alexanderweiss/nova-prettier/issues"
+    "url": "https://github.com/biati-digital/nova-php-cs-fixer/issues"
   },
-  "homepage": "https://github.com/alexanderweiss/nova-prettier#readme",
+  "homepage": "https://github.com/biati-digital/nova-php-cs-fixer#readme",
   "dependencies": {
     "esprima-fb": "^15001.1001.0-dev-harmony-fb",
     "fast-diff": "^1.2.0",

@@ -3,7 +3,7 @@
   "name": "PHP CS Fixer",
   "organization": "biati",
   "description": "Automatically format PHP files using php-cs-fixer with HTML, Blade and Twig support.",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "repository": "https://github.com/biati-digital/nova-php-cs-fixer",
   "bugs": "https://github.com/biati-digital/nova-php-cs-fixer/issues",
   "funding": "https://www.paypal.com/paypalme/bdigital9816/0usd",
@@ -269,12 +269,12 @@
       "type": "section",
       "children": [
         {
-            "key": "biati.phpcsfixer.fixerv3",
-            "title": "Enable PHP CS Fixer 3 (You might need restart Nova)",
-            "description": "V2 is no longer maintained, if you have a custom configuration file you need to check the upgrade guide to make sure V3 works with your configuration. If you don't have a custom configuration you can enable this option without problems. V2 will be removed in the near future. Click the icon at the right to learn how to upgrade your config file. This option does not work if you've configured a custom PHP CS Fixer path.",
-            "type": "boolean",
-            "default": false,
-            "link": "https://github.com/biati-digital/nova-php-cs-fixer/blob/main/phpcsfixer-rules.md"
+          "key": "biati.phpcsfixer.fixerv3",
+          "title": "Enable PHP CS Fixer 3 (You might need restart Nova)",
+          "description": "V2 is no longer maintained, if you have a custom configuration file you need to check the upgrade guide to make sure V3 works with your configuration. If you don't have a custom configuration you can enable this option without problems. V2 will be removed in the near future. Click the icon at the right to learn how to upgrade your config file. This option does not work if you've configured a custom PHP CS Fixer path.",
+          "type": "boolean",
+          "default": false,
+          "link": "https://github.com/biati-digital/nova-php-cs-fixer/blob/main/phpcsfixer-rules.md"
         },
         {
           "key": "biati.phpcsfixer.onsave",
