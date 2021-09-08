@@ -1,6 +1,9 @@
-# PHP formatter for Nova with HTML, Blade and Twig support
+<p align="center">
+<img src="https://i.ibb.co/xgKhSjq/extension.png" width="80" height="80">
+</p>
+<h1 align="center">Nova PHP formatter</h1>
 
-This is an extension for Nova to format PHP files on save or by command, it uses phpcs fixer to format PHP code, it can also format HTML inside PHP files, Blade and Twig files.
+This is an extension for Nova Editor to format PHP files on save or by command, **it uses PHP CS Fixer to format PHP code, it can also format HTML inside PHP files, Blade and Twig files.**
 
 ## Features
 
@@ -13,17 +16,24 @@ This is an extension for Nova to format PHP files on save or by command, it uses
 -   Workspace and Global configuration available
 -   Support for .editorconfig
 
+&nbsp;
+
 ## Before Start
 
 If you are using Prettier by Alexander Weiss make sure to go to Prettier Preferences and in the section **Ignored Syntaxes** select PHP.
 
+&nbsp;
 
 ## Need help configuring the extension?
 This extension uses phpcs fixer under the hood, if you try to format your code and don't see any change then there's a big chance you are not setting your rules correctly, here you can see the recommended way for defining your fixer rules [phpcsfixer-rules.md](https://github.com/biati-digital/nova-php-cs-fixer/blob/main/phpcsfixer-rules.md)
 
+&nbsp;
+
 ## Extension Options
 
 This extension provides multiple options to help you customize the formatting of your code
+
+&nbsp;
 
 #### PHP CS Fixer Options
 
@@ -35,7 +45,7 @@ This extension provides multiple options to help you customize the formatting of
 
 - **Coding Standard** Select the coding standard you prefer, available options are **"PSR1", "PSR2", "PSR12", "Symfony", "PhpCsFixer", "WordPress", "None"** If you set it to `None` you can add any other standard you want in the Additional Fixer Rules. `WordPress` Fixes are not included with phpcs fixer so if you select `WordPress` as standard the `Additional Fixer Rules` option will be ignored and the formatter will use a defined set of rules for WordPress.
 
-- **Additional Fixer Rules** You can configure rules to format PHP the way you want, this rules will be global but can be overwritten by using a config file or configuring the extension in your workspace, you can view all available options here [PHP-CS-Fixer](https://github.com/FriendsOfPHP/PHP-CS-Fixer): 
+- **Additional Fixer Rules** You can configure rules to format PHP the way you want, this rules will be global but can be overwritten by using a config file or configuring the extension in your workspace, you can view all available options here [PHP-CS-Fixer](https://github.com/FriendsOfPHP/PHP-CS-Fixer):
 
 You can define your rules like this (one per line)
 
@@ -44,9 +54,13 @@ array_syntax: { "syntax": "short" }
 array_indentation: true
 ```
 
-- **Global config path** Instead of defining the rules above you can select a global configuration file ".php_cs or .php_cs.dist", the fixer will use your configuration file instead of the global rules. You can also overwritte the global config file by adding a ".php_cs or .php_cs.dist" file in the root of your project that way each project can have it's own rules or if you don't want the file inside your project you can define it in the extension options of the active workspace
+
+- **Global config path** Instead of defining the rules above you can select a global configuration file ".php_cs or .php_cs.dist", the fixer will use your configuration file instead of the global rules. You can also overwritte the global config file by adding a ".php_cs or .php_cs.dist" file in the root of your project that way each project can have it's own rules or if you don't want the file inside your project you can define it in the extension options of the active workspace. [Need help with your configuration file?](https://github.com/biati-digital/nova-php-cs-fixer/blob/main/phpcsfixer-rules.md)
+
 
 - **Format on Save** Enable or disable automatic formatting on save
+
+- **Format on save only if workspace has a config file** Only format on save if the workspace contains a configuration file for example: .php_cs or .php_cs.dist or .php-cs-fixer.php or .php-cs-fixer.dist.php. You can still format the file doing right click in the code and choose Format with PHP CS Fixer
 
 - **Ignore remote files** Enable or disable automatic formatting of remote files
 
@@ -56,6 +70,7 @@ array_indentation: true
 
 - **Tab width** Specify the number of spaces per indentation-level.
 
+&nbsp;
 
 #### HTML Options
 
@@ -63,7 +78,7 @@ array_indentation: true
 
 - **Apply Additional fixes** Addition HTML fixes, more info here [aditional-fixes.md](https://github.com/biati-digital/nova-php-cs-fixer/blob/main/aditional-fixes.md)
 
-- **HTML Rules** Add the rules you want to use to format your HTML, here's an example of the available options:  
+- **HTML Rules** Add the rules you want to use to format your HTML, here's an example of the available options:
 **Note: Please read and make sure you understand the options otherwise do not move anything here, check all the available options here [html-options.md](https://github.com/biati-digital/nova-php-cs-fixer/blob/main/html-options.md)**
 
 ```
@@ -72,6 +87,7 @@ preserve_newlines: true
 indent_scripts: "keep"
 ```
 
+&nbsp;
 
 #### Blade Options
 
@@ -91,6 +107,7 @@ preserve_newlines: true
 indent_scripts: "keep"
 ```
 
+&nbsp;
 
 #### Twig Options
 
@@ -109,6 +126,7 @@ preserve: 3
 new_line: true
 ```
 
+&nbsp;
 
 ## Help us improve the extension
 

@@ -1,6 +1,9 @@
-# PHP formatter for Nova with HTML, Blade and Twig support
+<p align="center">
+<img src="https://i.ibb.co/xgKhSjq/extension.png" width="80" height="80">
+</p>
+<h1 align="center">Nova PHP formatter</h1>
 
-This is an extension for Nova to format PHP files on save or by command, it uses phpcs fixer to format PHP code, it can also format HTML inside PHP files, Blade and Twig files.
+This is an extension for Nova Editor to format PHP files on save or by command, **it uses PHP CS Fixer to format PHP code, it can also format HTML inside PHP files, Blade and Twig files.**
 
 ## Features
 
@@ -13,17 +16,24 @@ This is an extension for Nova to format PHP files on save or by command, it uses
 -   Workspace and Global configuration available
 -   Support for .editorconfig
 
+&nbsp;
+
 ## Before Start
 
 If you are using Prettier by Alexander Weiss make sure to go to Prettier Preferences and in the section **Ignored Syntaxes** select PHP.
 
+&nbsp;
 
 ## Need help configuring the extension?
 This extension uses phpcs fixer under the hood, if you try to format your code and don't see any change then there's a big chance you are not setting your rules correctly, here you can see the recommended way for defining your fixer rules [phpcsfixer-rules.md](https://github.com/biati-digital/nova-php-cs-fixer/blob/main/phpcsfixer-rules.md)
 
+&nbsp;
+
 ## Extension Options
 
 This extension provides multiple options to help you customize the formatting of your code
+
+&nbsp;
 
 #### PHP CS Fixer Options
 
@@ -60,6 +70,7 @@ array_indentation: true
 
 - **Tab width** Specify the number of spaces per indentation-level.
 
+&nbsp;
 
 #### HTML Options
 
@@ -76,6 +87,7 @@ preserve_newlines: true
 indent_scripts: "keep"
 ```
 
+&nbsp;
 
 #### Blade Options
 
@@ -95,6 +107,7 @@ preserve_newlines: true
 indent_scripts: "keep"
 ```
 
+&nbsp;
 
 #### Twig Options
 
@@ -113,6 +126,7 @@ preserve: 3
 new_line: true
 ```
 
+&nbsp;
 
 ## Help us improve the extension
 
