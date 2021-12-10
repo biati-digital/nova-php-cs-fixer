@@ -25496,11 +25496,10 @@ class PHPFormatter$1 {
             phpPath = phpPath.replace(/(\s+)/g, '\\$1');
             //csfixerPath = csfixerPath.replace(/(\s+)/g, '\\$1');
             //filePath = filePath.replace(/(\s+)/g, '\\$1');
-            csfixerPath = '"' + csfixerPath +'"';
-            filePath = '"' + filePath +'"';
+            csfixerPath = '"' + csfixerPath + '"';
+            filePath = '"' + filePath + '"';
             cacheFile = cacheFile.replace(/(\s+)/g, '\\$1');
         }
-
 
         const cmd = [phpPath, csfixerPath, 'fix', filePath];
 
@@ -25509,7 +25508,10 @@ class PHPFormatter$1 {
         }
 
         if (userRules) {
-            userRules = userRules.replace(/[\u2018\u2019]/g, '"').replace(/[\u201C\u201D]/g, '"').replace(/[“”‘’]/g, '"');
+            userRules = userRules
+                .replace(/[\u2018\u2019]/g, '"')
+                .replace(/[\u201C\u201D]/g, '"')
+                .replace(/[“”‘’]/g, '"');
         }
 
         if (configFile) {
@@ -25675,7 +25677,6 @@ class PHPFormatter$1 {
 
                     resolve(format);
                 } else if (!stdOut.length && stdErr.length == 2 && stdErr[1].includes('cache')) {
-
                     format.success = true;
                     format.content = this.text; // return the original code
                     resolve(format);
@@ -25724,10 +25725,14 @@ class PHPFormatter$1 {
             nova.fs.mkdir(nova.extension.workspaceStoragePath);
         }
 
+        try {
+            file = file.replace(nova.workspace.path, '');
+        } catch (error) {}
+
         const fileID =
             file
                 .replace('.php', '')
-                .replace(/[^a-zA-Z]/g, '')
+                .replace(/[^A-Za-z0-9]/g, '')
                 .toLowerCase()
                 .trim() + '.php';
 
