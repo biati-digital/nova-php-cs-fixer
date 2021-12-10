@@ -7,7 +7,7 @@ This is an extension for Nova Editor to format PHP files on save or by command, 
 
 ## Features
 
--   Works out of the box no need to install anything
+-   Works out of the box no need to install anything (at least for Big Sur users and lower, Mac OS Monterey and Up, read below)
 -   HTML support, it can handle files with inline HTML
 -   Blade support, it can format .blade.php files
 -   Twig support, it can format .twig files
@@ -24,6 +24,24 @@ If you are using Prettier by Alexander Weiss make sure to go to Prettier Prefere
 
 &nbsp;
 
+## Mac OS Monterey+ requirements
+
+Starting from Mac OS Monterey Apple removed PHP so you have to install it manually, that can easily be done with [Homebrew](https://brew.sh/), just open your terminal and paste the commands below:
+
+1.- Install Homebrew
+```
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+
+2.- Install PHP
+```
+brew install php
+```
+
+That's it, PHP is now installed, now go to the extension preferences and in "PHP path" click the "choose" button so you can select the PHP executable. Homebrew installs PHP in /usr/local/Cellar/php/**[ your php version ]**/bin/php
+
+&nbsp;
+
 ## Need help configuring the extension?
 This extension uses phpcs fixer under the hood, if you try to format your code and don't see any change then there's a big chance you are not setting your rules correctly, here you can see the recommended way for defining your fixer rules [phpcsfixer-rules.md](https://github.com/biati-digital/nova-php-cs-fixer/blob/main/phpcsfixer-rules.md)
 
@@ -37,7 +55,7 @@ This extension provides multiple options to help you customize the formatting of
 
 #### PHP CS Fixer Options
 
-- **PHP Path** - Path to your PHP installation, if empty the default php included with the OS will be used
+- **PHP Path** - Path to your PHP installation, if empty the default PHP included with the OS will be used (Only for Big Sur and lower, Mac OS Monterey and up does no longer includes PHP by default)
 
 - **CS Fixer Path** Path to php-cs-fixer, if empty the fixer included with the extension will be used
 

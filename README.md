@@ -7,7 +7,7 @@ This is an extension for Nova Editor to format PHP files on save or by command, 
 
 ## Features
 
--   Works out of the box no need to install anything
+-   Works out of the box no need to install anything (at least for Big Sur users and lower, Mac OS Monterey and Up, read below)
 -   HTML support, it can handle files with inline HTML
 -   Blade support, it can format .blade.php files
 -   Twig support, it can format .twig files
@@ -21,6 +21,24 @@ This is an extension for Nova Editor to format PHP files on save or by command, 
 ## Before Start
 
 If you are using Prettier by Alexander Weiss make sure to go to Prettier Preferences and in the section **Ignored Syntaxes** select PHP.
+
+&nbsp;
+
+## Mac OS Monterey+ requirements
+
+Starting from Mac OS Monterey Apple removed PHP so you have to install it manually, that can easily be done with [Homebrew](https://brew.sh/), just open your terminal and paste the commands below:
+
+1.- Install Homebrew
+```
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+
+2.- Install PHP
+```
+brew install php
+```
+
+That's it, PHP is now installed, now go to the extension preferences and in "PHP path" click the "choose" button so you can select the PHP executable. Homebrew installs PHP in /usr/local/Cellar/php/**[ your php version ]**/bin/php
 
 &nbsp;
 
