@@ -1,3 +1,9 @@
+## Version 4.0.2
+
+- Fixed: Creating temp files on file paths that contain numbers.
+- Updated: PHP path option now is a path select field
+- Updated: README
+
 ## Version 4.0.1
 
 - New: New extension icon
