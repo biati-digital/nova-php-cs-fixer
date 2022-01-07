@@ -1,3 +1,7 @@
+## Version 4.1.0
+
+- Updated: PHP-CS-Fixer to 3.4.0
+
 ## Version 4.0.2
 
 - Fixed: Creating temp files on file paths that contain numbers.
