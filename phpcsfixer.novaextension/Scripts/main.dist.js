@@ -26146,7 +26146,7 @@ const Formatter = formatter;
 const compositeDisposable = new CompositeDisposable();
 const serverInstance = new Server('PHP CS Fixer');
 const { log, cleanDirectory } = helpers;
-const phpcsfixerVerion = '2.19.2';
+const phpcsfixerVerion = '3.4.0';
 
 var activate = main.activate = function () {
     const formater = new Formatter(serverInstance, phpcsfixerVerion);
@@ -26162,7 +26162,7 @@ var activate = main.activate = function () {
     nova.config.onDidChange(nova.extension.identifier + '.fixerv3', (val) => {
         if (val) {
             log('Installing php-cs-fixer-3.1.0');
-            copyServiceFiles('3.1.0');
+            copyServiceFiles('3.4.0');
         }
     });
 
