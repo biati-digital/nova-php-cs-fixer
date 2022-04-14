@@ -59,8 +59,6 @@ This extension provides multiple options to help you customize the formatting of
 
 - **CS Fixer Path** Path to php-cs-fixer, if empty the fixer included with the extension will be used
 
-- **PHP Dedicated server and Dedicated server port** PHP is really fast but the start can be a little slow, having a small server runnig will improve the formatting speed, but please try both methods and decide the one you want to use, both are fine.
-
 - **Coding Standard** Select the coding standard you prefer, available options are **"PSR1", "PSR2", "PSR12", "Symfony", "PhpCsFixer", "WordPress", "None"** If you set it to `None` you can add any other standard you want in the Additional Fixer Rules. `WordPress` Fixes are not included with phpcs fixer so if you select `WordPress` as standard the `Additional Fixer Rules` option will be ignored and the formatter will use a defined set of rules for WordPress.
 
 - **Additional Fixer Rules** You can configure rules to format PHP the way you want, this rules will be global but can be overwritten by using a config file or configuring the extension in your workspace, you can view all available options here [PHP-CS-Fixer](https://github.com/FriendsOfPHP/PHP-CS-Fixer):

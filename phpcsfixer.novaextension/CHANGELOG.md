@@ -1,3 +1,10 @@
+## Version 4.2.0
+
+- New: Added env variable PHP_CS_FIXER_IGNORE_ENV
+- Updated: PHP CS Fixer 3.8.0
+- Updated: Readme
+- Updated: Formatter support for server mode is deprecated, full support will be removed in the future
+
 ## Version 4.1.0
 
 - Updated: PHP-CS-Fixer to 3.4.0
