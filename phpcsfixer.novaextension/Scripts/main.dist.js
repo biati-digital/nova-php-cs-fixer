@@ -58,85 +58,6 @@ var installer = {
     extensionInstaller: extensionInstaller$1
 };
 
-class SingleProcess$1 {
-    constructor(port, processConfig) {
-        this.events = [];
-        this.processConfig = processConfig;
-        this.port = port;
-    }
-
-    async start() {
-        const stdOut = [];
-        const stdErr = [];
-        const processInstance = new Process('/usr/bin/env', this.processConfig);
-
-        processInstance.onStdout((result) => {
-            stdOut.push(result);
-        });
-        processInstance.onStderr((line) => {
-            stdErr.push(line);
-        });
-        processInstance.onDidExit((status) => {
-            this.didExit(status, stdOut, stdErr.join(' '));
-        });
-
-        processInstance.start();
-        this.singleProcess = processInstance;
-
-        return processInstance;
-    }
-
-    didExit(exitCode, stdOut, stdErr) {
-        if (!this.singleProcess) {
-            return;
-        }
-
-        this.trigger('exit', {
-            exitCode,
-            stdOut,
-            stdErr,
-            port: this.port,
-        });
-    }
-    getProcess() {
-        return this.singleProcess;
-    }
-    stop() {
-        this.trigger('exit', { status: 0, stdOut: 'stop', stdErr: '', port: this.port });
-        this.singleProcess.terminate();
-    }
-    reload() {
-        this.trigger('reload');
-        this.singleProcess.terminate();
-        this.start();
-    }
-    on(evt, callback, once = false) {
-        this.events.push({ evt, once, callback });
-    }
-    once(evt, callback) {
-        this.on(evt, callback, true);
-    }
-    trigger(eventName, data = null) {
-        const onceTriggered = [];
-
-        this.events.forEach((event, i) => {
-            const { evt, once, callback } = event;
-
-            if (evt == eventName) {
-                callback(data);
-                if (once) {
-                    onceTriggered.push(i);
-                }
-            }
-        });
-        if (onceTriggered.length) {
-            onceTriggered.forEach((i) => this.events.splice(i, 1));
-        }
-    }
-}
-
-var process = SingleProcess$1;
-
 const options$4 = {
     phppath: '',
     csfixerpath: '',
@@ -507,7 +428,6 @@ var helpers = {
     cleanDirectory: cleanDirectory$1
 };
 
-const SingleProcess = process;
 const extensionConfig$1 = config;
 new CompositeDisposable();
 const { log: log$6 } = helpers;
@@ -548,39 +468,7 @@ class Server$1 {
             return false;
         }
 
-        const serverPath = nova.path.join(nova.extension.globalStoragePath, 'php');
-        const script = nova.path.join(nova.extension.globalStoragePath, 'php', 'index.php');
-
-        let phpPath = this.extensionConfig.phppath;
-
-        if (!phpPath) {
-            phpPath = 'php';
-        }
-
-        this.mainProcess = new SingleProcess(this.extensionConfig.port, {
-            args: [phpPath, '-S', 'localhost:' + this.extensionConfig.port, script],
-            cwd: serverPath,
-            shell: true,
-        });
-
-        this.mainProcess.on('start', () => {
-            log$6('PHP CS Fixer Server Start');
-        });
-        this.mainProcess.on('exit', ({ status, stdOut, stdErr, port }) => {
-            if (this.processes.get(port)) {
-                this.processes.delete(port);
-            }
-            if (stdOut == 'stop') {
-                return this.onServerStop();
-            }
-            let error = stdErr.trim();
-            if (error) {
-                this.onExit(error);
-            }
-        });
-
-        this.mainProcess.start();
-        this.processes.set(this.extensionConfig.port, this.mainProcess.getProcess());
+        return false;
     }
     stop() {
         if (!this.mainProcess) {
@@ -606,7 +494,7 @@ class Server$1 {
         const serverURL = `http://localhost:${this.extensionConfig.port}/index.php`;
         const rawResponse = await fetch(serverURL, {
             method: 'post',
-            headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+            headers: { Accept: 'application/json', 'Content-Type': 'application/json' }
         });
 
         if (rawResponse.ok) {
@@ -25416,7 +25304,7 @@ class PHPFormatter$1 {
 
         // Temp code to enable v3
         if (config.fixerv3 && config.csfixerpath == '') {
-            this.phpcsfixerVersion = '3.1.0';
+            this.phpcsfixerVersion = '3.4.0';
         }
 
         return this;
@@ -25438,12 +25326,13 @@ class PHPFormatter$1 {
         this.tmpFile = await this.tmpFile(this.filePath, this.text);
         this.command = await this.getCommand(this.tmpFile);
 
-        let formatted = false;
+        let formatted = await this.formatUsingProcess();
+        /*let formatted = false;
         if (this.config.server) {
             formatted = await this.formatOnServer();
         } else {
             formatted = await this.formatUsingProcess();
-        }
+        }*/
 
         // If no chages detected by php-cs-fixer
         if (formatted.content == originalCode) {
@@ -25515,9 +25404,9 @@ class PHPFormatter$1 {
         }
 
         if (configFile) {
-            if (config.server) {
+            /*if (config.server) {
                 configFile = configFile.replace(/(\s+)/g, '\\$1');
-            }
+            }*/
             cmd.push(`--config=${configFile}`);
         } else {
             let rulesLines = userRules.split('\n');
@@ -25552,11 +25441,12 @@ class PHPFormatter$1 {
                 rulesString = Object.assign(rulesString, userRulesObj);
                 rulesString = JSON.stringify(rulesString);
 
-                if (config.server) {
+                /*if (config.server) {
                     cmd.push(`--rules='${rulesString}'`);
                 } else {
                     cmd.push(`--rules=${rulesString}`);
-                }
+                }*/
+                cmd.push(`--rules=${rulesString}`);
             }
         }
 
@@ -25641,7 +25531,8 @@ class PHPFormatter$1 {
             const stdOut = [];
             const stdErr = [];
             const process = new Process('/usr/bin/env', {
-                args: cmd
+                args: cmd,
+                env: { PHP_CS_FIXER_IGNORE_ENV: '1' }
             });
 
             log$2('Calling PHP Formatting using a process');
@@ -26161,7 +26052,7 @@ var activate = main.activate = function () {
 
     nova.config.onDidChange(nova.extension.identifier + '.fixerv3', (val) => {
         if (val) {
-            log('Installing php-cs-fixer-3.1.0');
+            log('Installing php-cs-fixer v3');
             copyServiceFiles('3.4.0');
         }
     });

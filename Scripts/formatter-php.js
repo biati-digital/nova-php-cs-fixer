@@ -37,7 +37,7 @@ class PHPFormatter {
 
         // Temp code to enable v3
         if (config.fixerv3 && config.csfixerpath == '') {
-            this.phpcsfixerVersion = '3.1.0';
+            this.phpcsfixerVersion = '3.4.0';
         }
 
         return this;
@@ -59,12 +59,13 @@ class PHPFormatter {
         this.tmpFile = await this.tmpFile(this.filePath, this.text);
         this.command = await this.getCommand(this.tmpFile);
 
-        let formatted = false;
+        let formatted = await this.formatUsingProcess();
+        /*let formatted = false;
         if (this.config.server) {
             formatted = await this.formatOnServer();
         } else {
             formatted = await this.formatUsingProcess();
-        }
+        }*/
 
         // If no chages detected by php-cs-fixer
         if (formatted.content == originalCode) {
@@ -136,9 +137,9 @@ class PHPFormatter {
         }
 
         if (configFile) {
-            if (config.server) {
+            /*if (config.server) {
                 configFile = configFile.replace(/(\s+)/g, '\\$1');
-            }
+            }*/
             cmd.push(`--config=${configFile}`);
         } else {
             let rulesLines = userRules.split('\n');
@@ -173,11 +174,12 @@ class PHPFormatter {
                 rulesString = Object.assign(rulesString, userRulesObj);
                 rulesString = JSON.stringify(rulesString);
 
-                if (config.server) {
+                /*if (config.server) {
                     cmd.push(`--rules='${rulesString}'`);
                 } else {
                     cmd.push(`--rules=${rulesString}`);
-                }
+                }*/
+                cmd.push(`--rules=${rulesString}`);
             }
         }
 
@@ -262,7 +264,8 @@ class PHPFormatter {
             const stdOut = [];
             const stdErr = [];
             const process = new Process('/usr/bin/env', {
-                args: cmd
+                args: cmd,
+                env: { PHP_CS_FIXER_IGNORE_ENV: '1' }
             });
 
             log('Calling PHP Formatting using a process');

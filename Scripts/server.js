@@ -39,6 +39,8 @@ class Server {
             return false;
         }
 
+        return false;
+
         const serverPath = nova.path.join(nova.extension.globalStoragePath, 'php');
         const script = nova.path.join(nova.extension.globalStoragePath, 'php', 'index.php');
 
@@ -51,7 +53,7 @@ class Server {
         this.mainProcess = new SingleProcess(this.extensionConfig.port, {
             args: [phpPath, '-S', 'localhost:' + this.extensionConfig.port, script],
             cwd: serverPath,
-            shell: true,
+            shell: true
         });
 
         this.mainProcess.on('start', () => {
@@ -97,7 +99,7 @@ class Server {
         const serverURL = `http://localhost:${this.extensionConfig.port}/index.php`;
         const rawResponse = await fetch(serverURL, {
             method: 'post',
-            headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+            headers: { Accept: 'application/json', 'Content-Type': 'application/json' }
         });
 
         if (rawResponse.ok) {
