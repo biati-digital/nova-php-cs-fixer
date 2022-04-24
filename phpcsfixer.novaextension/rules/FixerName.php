@@ -7,7 +7,7 @@ namespace WeDevs\Fixer;
  */
 trait FixerName
 {
-    public function getName()
+    public function getName(): string
     {
         $name = parent::getName();
 

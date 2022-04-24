@@ -114,14 +114,10 @@ class PHPFormatter {
             csfixerPath = nova.path.join(nova.extension.globalStoragePath, 'php', 'php-cs-fixer-' + this.phpcsfixerVersion);
         }
 
-        if (config.server) {
-            phpPath = phpPath.replace(/(\s+)/g, '\\$1');
-            //csfixerPath = csfixerPath.replace(/(\s+)/g, '\\$1');
-            //filePath = filePath.replace(/(\s+)/g, '\\$1');
-            csfixerPath = '"' + csfixerPath + '"';
-            filePath = '"' + filePath + '"';
-            cacheFile = cacheFile.replace(/(\s+)/g, '\\$1');
-        }
+        phpPath = phpPath.replace(/(\s+)/g, '\\$1');
+        csfixerPath = csfixerPath.replace(/(\s+)/g, '\\$1');
+        filePath = filePath.replace(/(\s+)/g, '\\$1');
+        cacheFile = cacheFile.replace(/(\s+)/g, '\\$1');
 
         const cmd = [phpPath, csfixerPath, 'fix', filePath];
 
