@@ -4,7 +4,7 @@ require_once __DIR__ . '/FixerName.php';
 require_once __DIR__ . '/SpaceInsideParenthesisFixer.php';
 require_once __DIR__ . '/BlankLineAfterClassOpeningFixer.php';
 
-$config = PhpCsFixer\Config::create()
+$config = (new PhpCsFixer\Config())
     ->registerCustomFixers([
         new WeDevs\Fixer\SpaceInsideParenthesisFixer(),
         new WeDevs\Fixer\BlankLineAfterClassOpeningFixer()
