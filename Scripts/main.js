@@ -2,7 +2,7 @@ const { extensionInstaller, copyServiceFiles } = require('./installer.js');
 const Server = require('./server.js');
 const Formatter = require('./formatter.js');
 const compositeDisposable = new CompositeDisposable();
-const serverInstance = new Server('PHP CS Fixer');
+const serverInstance = new Server('PHP CS Fixer', '2.0.0');
 const { log, cleanDirectory } = require('./helpers.js');
 const phpcsfixerVerion = '3.4.0';
 
@@ -19,8 +19,8 @@ exports.activate = function () {
 
     nova.config.onDidChange(nova.extension.identifier + '.fixerv3', (val) => {
         if (val) {
-            log('Installing php-cs-fixer v3');
-            copyServiceFiles('3.4.0');
+            log('Installing php-cs-fixer v' + phpcsfixerVerion);
+            copyServiceFiles(phpcsfixerVerion);
         }
     });
 
@@ -36,6 +36,7 @@ exports.activate = function () {
 };
 
 exports.deactivate = function () {
+    console.log('Deactivate');
     cleanDirectory(nova.extension.workspaceStoragePath);
     compositeDisposable.dispose();
 };
