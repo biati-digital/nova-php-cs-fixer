@@ -1,3 +1,10 @@
+## Version 4.2.1
+
+- Updated: Server file
+- Updated: Server formatting code
+- Fixed: Error in Nova 9+
+
+
 ## Version 4.2.0
 
 - New: Added env variable PHP_CS_FIXER_IGNORE_ENV
