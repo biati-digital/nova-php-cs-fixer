@@ -10,7 +10,7 @@ const { log, stringToObject, spacesToTabs, adjustSpacesLength, indentLines } = r
  */
 
 class PHPFormatter {
-    constructor(data) {
+    constructor(data, budledFixerVersion) {
         let { text, editor, config } = data;
         this.config = config;
         this.text = text;
@@ -37,7 +37,7 @@ class PHPFormatter {
 
         // Temp code to enable v3
         if (config.fixerv3 && config.csfixerpath == '') {
-            this.phpcsfixerVersion = '3.4.0';
+            this.phpcsfixerVersion = budledFixerVersion;
         }
 
         return this;
@@ -59,13 +59,13 @@ class PHPFormatter {
         this.tmpFile = await this.tmpFile(this.filePath, this.text);
         this.command = await this.getCommand(this.tmpFile);
 
-        let formatted = await this.formatUsingProcess();
-        /*let formatted = false;
+        let formatted = false;
+        
         if (this.config.server) {
             formatted = await this.formatOnServer();
         } else {
             formatted = await this.formatUsingProcess();
-        }*/
+        }
 
         // If no chages detected by php-cs-fixer
         if (formatted.content == originalCode) {
@@ -116,8 +116,6 @@ class PHPFormatter {
 
         if (config.server) {
             phpPath = phpPath.replace(/(\s+)/g, '\\$1');
-            //csfixerPath = csfixerPath.replace(/(\s+)/g, '\\$1');
-            //filePath = filePath.replace(/(\s+)/g, '\\$1');
             csfixerPath = '"' + csfixerPath + '"';
             filePath = '"' + filePath + '"';
             cacheFile = cacheFile.replace(/(\s+)/g, '\\$1');
@@ -137,9 +135,9 @@ class PHPFormatter {
         }
 
         if (configFile) {
-            /*if (config.server) {
+            if (config.server) {
                 configFile = configFile.replace(/(\s+)/g, '\\$1');
-            }*/
+            }
             cmd.push(`--config=${configFile}`);
         } else {
             let rulesLines = userRules.split('\n');
@@ -174,12 +172,11 @@ class PHPFormatter {
                 rulesString = Object.assign(rulesString, userRulesObj);
                 rulesString = JSON.stringify(rulesString);
 
-                /*if (config.server) {
+                if (config.server) {
                     cmd.push(`--rules='${rulesString}'`);
                 } else {
                     cmd.push(`--rules=${rulesString}`);
-                }*/
-                cmd.push(`--rules=${rulesString}`);
+                }
             }
         }
 
@@ -223,6 +220,7 @@ class PHPFormatter {
                 config: config
             })
         });
+    
 
         if (!rawResponse.ok) {
             log('The server returned an error', true);
@@ -235,6 +233,8 @@ class PHPFormatter {
         } catch (error) {
             log(error, true);
         }
+        
+        console.log('rawResponse', rawResponse);
 
         if (typeof response == 'object' && response.success) {
             log('Server response');

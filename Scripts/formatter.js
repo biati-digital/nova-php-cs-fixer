@@ -12,6 +12,7 @@ class Formatter {
         this.extensionConfig = extensionConfig();
         this.formattedText = new Map();
         this.extensionConfig.phpcsfixerVersion = phpcsfixerVersion;
+        this.bundledFixerVersion = phpcsfixerVersion;
     }
 
     /*
@@ -56,6 +57,9 @@ class Formatter {
         let processed = false;
         let config = this.extensionConfig;
         let formatterData = { text, editor, config };
+        
+        log('Extension configuration');
+        log(config);
 
         if (extension == 'blade') {
             formatter = new BladeFormatter(formatterData);
@@ -66,7 +70,7 @@ class Formatter {
         }
 
         if (extension == 'php') {
-            formatter = new PHPFormatter(formatterData);
+            formatter = new PHPFormatter(formatterData, this.bundledFixerVersion);
         }
 
         if (formatter) {
