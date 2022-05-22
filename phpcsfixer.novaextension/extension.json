@@ -3,7 +3,7 @@
   "name": "PHP CS Fixer",
   "organization": "biati",
   "description": "Automatically format PHP files using php-cs-fixer with HTML, Blade and Twig support.",
-  "version": "4.2.0",
+  "version": "4.2.1",
   "repository": "https://github.com/biati-digital/nova-php-cs-fixer",
   "bugs": "https://github.com/biati-digital/nova-php-cs-fixer/issues",
   "funding": "https://www.paypal.com/paypalme/bdigital9816/0usd",
@@ -32,7 +32,7 @@
         {
           "key": "biati.phpcsfixer.csfixerpath",
           "title": "PHP CS Fixer path",
-          "description": "path to your fixer executable, if empty the fixer included with the extension will be used.",
+          "description": "path to your custom fixer executable, if empty the fixer included with the extension will be used.",
           "type": "path",
           "default": ""
         },
