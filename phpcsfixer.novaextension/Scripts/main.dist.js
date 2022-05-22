@@ -58,6 +58,85 @@ var installer = {
     extensionInstaller: extensionInstaller$1
 };
 
+class SingleProcess$1 {
+    constructor(port, processConfig) {
+        this.events = [];
+        this.processConfig = processConfig;
+        this.port = port;
+    }
+
+    async start() {
+        const stdOut = [];
+        const stdErr = [];
+        const processInstance = new Process('/usr/bin/env', this.processConfig);
+
+        processInstance.onStdout((result) => {
+            stdOut.push(result);
+        });
+        processInstance.onStderr((line) => {
+            stdErr.push(line);
+        });
+        processInstance.onDidExit((status) => {
+            this.didExit(status, stdOut, stdErr.join(' '));
+        });
+
+        processInstance.start();
+        this.singleProcess = processInstance;
+
+        return processInstance;
+    }
+
+    didExit(exitCode, stdOut, stdErr) {
+        if (!this.singleProcess) {
+            return;
+        }
+
+        this.trigger('exit', {
+            exitCode,
+            stdOut,
+            stdErr,
+            port: this.port,
+        });
+    }
+    getProcess() {
+        return this.singleProcess;
+    }
+    stop() {
+        this.trigger('exit', { status: 0, stdOut: 'stop', stdErr: '', port: this.port });
+        this.singleProcess.terminate();
+    }
+    reload() {
+        this.trigger('reload');
+        this.singleProcess.terminate();
+        this.start();
+    }
+    on(evt, callback, once = false) {
+        this.events.push({ evt, once, callback });
+    }
+    once(evt, callback) {
+        this.on(evt, callback, true);
+    }
+    trigger(eventName, data = null) {
+        const onceTriggered = [];
+
+        this.events.forEach((event, i) => {
+            const { evt, once, callback } = event;
+
+            if (evt == eventName) {
+                callback(data);
+                if (once) {
+                    onceTriggered.push(i);
+                }
+            }
+        });
+        if (onceTriggered.length) {
+            onceTriggered.forEach((i) => this.events.splice(i, 1));
+        }
+    }
+}
+
+var process = SingleProcess$1;
+
 const options$4 = {
     phppath: '',
     csfixerpath: '',
@@ -428,14 +507,16 @@ var helpers = {
     cleanDirectory: cleanDirectory$1
 };
 
+const SingleProcess = process;
 const extensionConfig$1 = config;
 new CompositeDisposable();
 const { log: log$6 } = helpers;
 
 class Server$1 {
-    constructor(name) {
+    constructor(name, version) {
         this.extensionConfig = extensionConfig$1();
         this.serverrunning = false;
+        this.serverVersion = version;
         this.processes = new Map();
         this.processesArr = [];
 
@@ -458,7 +539,7 @@ class Server$1 {
                     previousServer.terminate();
                 } catch (error) {}
             }
-            log$6(`PHP Server changed port to ${val}, restart server...`);
+            log$6(`PHP CS Fixer Server changed port to ${val}, restarting server...`);
             this.start();
         });
     }
@@ -468,7 +549,55 @@ class Server$1 {
             return false;
         }
 
-        return false;
+        const serverPath = nova.path.join(nova.extension.globalStoragePath, 'php');
+        const script = nova.path.join(nova.extension.globalStoragePath, 'php', 'index.php');
+        const latestVersion = nova.path.join(nova.extension.globalStoragePath, 'php', `server-${this.serverVersion}.php`);
+        let exists = nova.fs.stat(latestVersion);
+        
+        if (!exists) {
+            this.stop();
+            
+            const scriptFile = nova.path.join(nova.extension.path, 'php', `server-${this.serverVersion}.php`);        
+            try {
+                nova.fs.copy(scriptFile, nova.path.join(serverPath, `server-${this.serverVersion}.php`));
+                nova.fs.remove(script);
+                nova.fs.copy(scriptFile, script);
+                
+            } catch (error) {}
+        }
+        
+
+        let phpPath = this.extensionConfig.phppath;
+
+        if (!phpPath) {
+            phpPath = 'php';
+        }
+
+        this.mainProcess = new SingleProcess(this.extensionConfig.port, {
+            args: [phpPath, '-S', 'localhost:' + this.extensionConfig.port, script],
+            cwd: serverPath,
+            shell: true
+        });
+
+        this.mainProcess.on('start', () => {
+            log$6('PHP CS Fixer Server started');
+        });
+        
+        this.mainProcess.on('exit', ({ status, stdOut, stdErr, port }) => {
+            if (this.processes.get(port)) {
+                this.processes.delete(port);
+            }
+            if (stdOut == 'stop') {
+                return this.onServerStop();
+            }
+            let error = stdErr.trim();
+            if (error) {
+                this.onExit(error);
+            }
+        });
+
+        this.mainProcess.start();
+        this.processes.set(this.extensionConfig.port, this.mainProcess.getProcess());
     }
     stop() {
         if (!this.mainProcess) {
@@ -480,11 +609,11 @@ class Server$1 {
         if (!this.mainProcess) {
             return;
         }
-        log$6('PHP CS Fixer Reloading Server');
         this.mainProcess.reload();
+        log$6('PHP CS Fixer Server reloaded');
     }
     onServerStop() {
-        log$6('PHP CS Fixer Server stopped correctly');
+        log$6('PHP CS Fixer Server stopped');
     }
     async onExit(error) {
         // Calling the process returned an error
@@ -494,10 +623,12 @@ class Server$1 {
         const serverURL = `http://localhost:${this.extensionConfig.port}/index.php`;
         const rawResponse = await fetch(serverURL, {
             method: 'post',
-            headers: { Accept: 'application/json', 'Content-Type': 'application/json' }
+            headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+            body: JSON.stringify({})
         });
+        
 
-        if (rawResponse.ok) {
+        if (rawResponse.ok) {       
             let response = false;
 
             try {
@@ -508,18 +639,18 @@ class Server$1 {
 
             // Our server is already runnig, ignore error
             if (typeof response == 'object' && response.id == 'phpcsfixer') {
-                console.log('already runnign server');
+                console.log('PHP CS Fixer already running');
                 return true;
             }
         }
 
-        log$6('PHP CS Fixer Server did not started, see the error below:', true);
+        log$6('PHP CS Fixer Unable to start server, see the error below:', true);
         log$6(error, true);
 
         nova.notifications.cancel('phpfixer-success');
         let request = new NotificationRequest('phpfixer-error');
 
-        request.title = nova.localize('PHP Server Error');
+        request.title = nova.localize('PHP CS Fixer Server Error');
         request.body = error;
         request.actions = [nova.localize('Dismiss')];
 
@@ -25277,7 +25408,7 @@ const { log: log$2, stringToObject, spacesToTabs, adjustSpacesLength, indentLine
  */
 
 class PHPFormatter$1 {
-    constructor(data) {
+    constructor(data, budledFixerVersion) {
         let { text, editor, config } = data;
         this.config = config;
         this.text = text;
@@ -25304,7 +25435,7 @@ class PHPFormatter$1 {
 
         // Temp code to enable v3
         if (config.fixerv3 && config.csfixerpath == '') {
-            this.phpcsfixerVersion = '3.4.0';
+            this.phpcsfixerVersion = budledFixerVersion;
         }
 
         return this;
@@ -25326,13 +25457,13 @@ class PHPFormatter$1 {
         this.tmpFile = await this.tmpFile(this.filePath, this.text);
         this.command = await this.getCommand(this.tmpFile);
 
-        let formatted = await this.formatUsingProcess();
-        /*let formatted = false;
+        let formatted = false;
+        
         if (this.config.server) {
             formatted = await this.formatOnServer();
         } else {
             formatted = await this.formatUsingProcess();
-        }*/
+        }
 
         // If no chages detected by php-cs-fixer
         if (formatted.content == originalCode) {
@@ -25383,8 +25514,6 @@ class PHPFormatter$1 {
 
         if (config.server) {
             phpPath = phpPath.replace(/(\s+)/g, '\\$1');
-            //csfixerPath = csfixerPath.replace(/(\s+)/g, '\\$1');
-            //filePath = filePath.replace(/(\s+)/g, '\\$1');
             csfixerPath = '"' + csfixerPath + '"';
             filePath = '"' + filePath + '"';
             cacheFile = cacheFile.replace(/(\s+)/g, '\\$1');
@@ -25404,9 +25533,9 @@ class PHPFormatter$1 {
         }
 
         if (configFile) {
-            /*if (config.server) {
+            if (config.server) {
                 configFile = configFile.replace(/(\s+)/g, '\\$1');
-            }*/
+            }
             cmd.push(`--config=${configFile}`);
         } else {
             let rulesLines = userRules.split('\n');
@@ -25441,12 +25570,11 @@ class PHPFormatter$1 {
                 rulesString = Object.assign(rulesString, userRulesObj);
                 rulesString = JSON.stringify(rulesString);
 
-                /*if (config.server) {
+                if (config.server) {
                     cmd.push(`--rules='${rulesString}'`);
                 } else {
                     cmd.push(`--rules=${rulesString}`);
-                }*/
-                cmd.push(`--rules=${rulesString}`);
+                }
             }
         }
 
@@ -25490,6 +25618,7 @@ class PHPFormatter$1 {
                 config: config
             })
         });
+    
 
         if (!rawResponse.ok) {
             log$2('The server returned an error', true);
@@ -25502,6 +25631,8 @@ class PHPFormatter$1 {
         } catch (error) {
             log$2(error, true);
         }
+        
+        console.log('rawResponse', rawResponse);
 
         if (typeof response == 'object' && response.success) {
             log$2('Server response');
@@ -25907,6 +26038,7 @@ class Formatter$1 {
         this.extensionConfig = extensionConfig();
         this.formattedText = new Map();
         this.extensionConfig.phpcsfixerVersion = phpcsfixerVersion;
+        this.bundledFixerVersion = phpcsfixerVersion;
     }
 
     /*
@@ -25951,6 +26083,9 @@ class Formatter$1 {
         let processed = false;
         let config = this.extensionConfig;
         let formatterData = { text, editor, config };
+        
+        log$1('Extension configuration');
+        log$1(config);
 
         if (extension == 'blade') {
             formatter = new BladeFormatter(formatterData);
@@ -25961,7 +26096,7 @@ class Formatter$1 {
         }
 
         if (extension == 'php') {
-            formatter = new PHPFormatter(formatterData);
+            formatter = new PHPFormatter(formatterData, this.bundledFixerVersion);
         }
 
         if (formatter) {
@@ -26035,7 +26170,7 @@ const { extensionInstaller, copyServiceFiles } = installer;
 const Server = server;
 const Formatter = formatter;
 const compositeDisposable = new CompositeDisposable();
-const serverInstance = new Server('PHP CS Fixer');
+const serverInstance = new Server('PHP CS Fixer', '2.0.0');
 const { log, cleanDirectory } = helpers;
 const phpcsfixerVerion = '3.4.0';
 
@@ -26052,8 +26187,8 @@ var activate = main.activate = function () {
 
     nova.config.onDidChange(nova.extension.identifier + '.fixerv3', (val) => {
         if (val) {
-            log('Installing php-cs-fixer v3');
-            copyServiceFiles('3.4.0');
+            log('Installing php-cs-fixer v' + phpcsfixerVerion);
+            copyServiceFiles(phpcsfixerVerion);
         }
     });
 
@@ -26069,6 +26204,7 @@ var activate = main.activate = function () {
 };
 
 var deactivate = main.deactivate = function () {
+    console.log('Deactivate');
     cleanDirectory(nova.extension.workspaceStoragePath);
     compositeDisposable.dispose();
 };
