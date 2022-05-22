@@ -1,5 +1,6 @@
 .DS_Store
 .nova
+.idea
 .vscode
 extension.afphoto
 node_modules
