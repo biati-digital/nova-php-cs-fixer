@@ -14,8 +14,10 @@ class Fixer
             'align_multiline_comment' => true,
             'array_syntax' => ['syntax' => 'short'],
             'binary_operator_spaces' => [
-                'align_double_arrow' => true,
-                'align_equals' => true,
+                'operators' => [
+                    '=' => 'no_space',
+                    '=>' => 'align',
+                ]
             ],
             'blank_line_after_opening_tag' => true,
             'blank_line_before_statement' => [
@@ -26,7 +28,7 @@ class Fixer
                 'allow_single_line_closure' => false,
             ],
             'cast_spaces' => ['space' => 'single'],
-            'class_attributes_separation' => ['elements' => ['method', 'const', 'property']],
+            'class_attributes_separation' => ['elements' => ['method' => 'one', 'const' => 'only_if_meta', 'property' => 'one']],
             'class_definition' => ['single_line' => true],
             'concat_space' => ['spacing' => 'one'],
             'constant_case' => ['case' => 'lower'],
@@ -70,7 +72,7 @@ class Fixer
             'no_mixed_echo_print' => true,
             'no_multiline_whitespace_around_double_arrow' => true,
             'no_short_bool_cast' => true,
-            'no_short_echo_tag' => true,
+            'echo_tag_syntax' => ['format' => 'long'],
             'no_singleline_whitespace_before_semicolons' => true,
             'no_spaces_around_offset' => ['positions' => ['outside']],
             'no_spaces_inside_parenthesis' => false,
@@ -102,7 +104,9 @@ class Fixer
             ],
             'phpdoc_annotation_without_dot' => true,
             'phpdoc_indent' => true,
-            'phpdoc_inline_tag' => true,
+            'general_phpdoc_tag_rename' => true,
+            'phpdoc_inline_tag_normalizer' => true,
+            'phpdoc_tag_type' => true,
             'phpdoc_no_access' => true,
             'phpdoc_no_alias_tag' => true,
             'phpdoc_no_package' => true,
@@ -137,7 +141,7 @@ class Fixer
             'standardize_increment' => true,
             'standardize_not_equals' => true,
             'ternary_operator_spaces' => true,
-            'trailing_comma_in_multiline_array' => true,
+            'trailing_comma_in_multiline' => ['elements' => ['arrays']],
             'trim_array_spaces' => false,
             'whitespace_after_comma_in_array' => true,
         ];
