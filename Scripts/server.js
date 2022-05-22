@@ -4,9 +4,10 @@ const compositeDisposable = new CompositeDisposable();
 const { log } = require('./helpers.js');
 
 class Server {
-    constructor(name) {
+    constructor(name, version) {
         this.extensionConfig = extensionConfig();
         this.serverrunning = false;
+        this.serverVersion = version;
         this.processes = new Map();
         this.processesArr = [];
 
@@ -29,7 +30,7 @@ class Server {
                     previousServer.terminate();
                 } catch (error) {}
             }
-            log(`PHP Server changed port to ${val}, restart server...`);
+            log(`PHP CS Fixer Server changed port to ${val}, restarting server...`);
             this.start();
         });
     }
@@ -39,10 +40,23 @@ class Server {
             return false;
         }
 
-        return false;
-
         const serverPath = nova.path.join(nova.extension.globalStoragePath, 'php');
         const script = nova.path.join(nova.extension.globalStoragePath, 'php', 'index.php');
+        const latestVersion = nova.path.join(nova.extension.globalStoragePath, 'php', `server-${this.serverVersion}.php`);
+        let exists = nova.fs.stat(latestVersion);
+        
+        if (!exists) {
+            this.stop();
+            
+            const scriptFile = nova.path.join(nova.extension.path, 'php', `server-${this.serverVersion}.php`);        
+            try {
+                nova.fs.copy(scriptFile, nova.path.join(serverPath, `server-${this.serverVersion}.php`));
+                nova.fs.remove(script);
+                nova.fs.copy(scriptFile, script);
+                
+            } catch (error) {}
+        }
+        
 
         let phpPath = this.extensionConfig.phppath;
 
@@ -57,8 +71,9 @@ class Server {
         });
 
         this.mainProcess.on('start', () => {
-            log('PHP CS Fixer Server Start');
+            log('PHP CS Fixer Server started');
         });
+        
         this.mainProcess.on('exit', ({ status, stdOut, stdErr, port }) => {
             if (this.processes.get(port)) {
                 this.processes.delete(port);
@@ -85,11 +100,11 @@ class Server {
         if (!this.mainProcess) {
             return;
         }
-        log('PHP CS Fixer Reloading Server');
         this.mainProcess.reload();
+        log('PHP CS Fixer Server reloaded');
     }
     onServerStop() {
-        log('PHP CS Fixer Server stopped correctly');
+        log('PHP CS Fixer Server stopped');
     }
     async onExit(error) {
         // Calling the process returned an error
@@ -99,10 +114,12 @@ class Server {
         const serverURL = `http://localhost:${this.extensionConfig.port}/index.php`;
         const rawResponse = await fetch(serverURL, {
             method: 'post',
-            headers: { Accept: 'application/json', 'Content-Type': 'application/json' }
+            headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+            body: JSON.stringify({})
         });
+        
 
-        if (rawResponse.ok) {
+        if (rawResponse.ok) {       
             let response = false;
 
             try {
@@ -113,18 +130,18 @@ class Server {
 
             // Our server is already runnig, ignore error
             if (typeof response == 'object' && response.id == 'phpcsfixer') {
-                console.log('already runnign server');
+                console.log('PHP CS Fixer already running');
                 return true;
             }
         }
 
-        log('PHP CS Fixer Server did not started, see the error below:', true);
+        log('PHP CS Fixer Unable to start server, see the error below:', true);
         log(error, true);
 
         nova.notifications.cancel('phpfixer-success');
         let request = new NotificationRequest('phpfixer-error');
 
-        request.title = nova.localize('PHP Server Error');
+        request.title = nova.localize('PHP CS Fixer Server Error');
         request.body = error;
         request.actions = [nova.localize('Dismiss')];
 
