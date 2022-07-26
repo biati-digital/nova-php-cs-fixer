@@ -147,3 +147,5 @@ new_line: true
 ## Help us improve the extension
 
 There's a link to submit bug reports, if you find an error please let us know, it takes you a few minutes.
+
+This extension is made with love by [biati digital](https://www.biati.com.mx)
