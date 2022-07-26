@@ -1,3 +1,13 @@
+## Version 4.2.3
+
+- Fixed: Another error in Blade formatter and double curly braces
+- Updated: README
+
+## Version 4.2.2
+
+- Fixed: Error in Blade formatter and double curly braces
+
+
 ## Version 4.2.1
 
 - Updated: Server file

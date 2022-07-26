@@ -6080,10 +6080,25 @@ class BladeFormatter$1 {
     bladeToHTML(text) {
         if (text.includes('<style')) {
             // Fix @page inside style tags
-            text = text.replace(/<style.*>([\s\S]+?)<\/style>/g, function (s, si) {
+            text = text.replace(/<style.*>([\s\S]+?)<\/style>/gi, function (s, si) {
                 return s.replace(si, si.replace(/@page/g, '.__blade_page'));
             });
         }
+
+
+        if (text.includes('<script')) {
+            text = text.replace(/<script[\s\S]*?>([\s\S]*?)<\/script>/gi, function (s, si) {
+                s = s.replace(/\{\{((?:(?!\}\}).)+)\}\}/g, function (m, c) {
+                    if (c) {
+                        c = c.replace(/(^[ \t]*|[ \t]*$)/g, '');
+                    }
+                    return '/* beautify ignore:start */{{' + c + '}}/* beautify ignore:end */';
+                });
+
+                return s;
+            });
+        }
+
 
         text = text.replace(/\{\{((?:(?!\}\}).)+)\}\}/g, function (m, c) {
             if (c) {
@@ -6191,6 +6206,28 @@ class BladeFormatter$1 {
             condition = condition.replace(/\&#60;/gm, '<');
             return `@if (${condition})`;
         });
+
+
+        text = text.replace(/\{\{((?:(?!\}\}).)+)\}\}/g, function (m, c) {
+            if (c) {
+                c = c.replace(/(^[ \t]*|[ \t]*$)/g, '').trim();
+            }
+
+            return '{{' + c + '}}';
+        });
+
+        if (text.includes('<script')) {
+            text = text.replace(/<script[\s\S]*?>([\s\S]*?)<\/script>/gi, function (s, si) {
+                s = s.replace(/[\r\n\s]+\/\* beautify ignore:start \*\/\{/gm, '{');
+                s = s.replace(/\}\/\* beautify ignore:end \*\/[\r\n\s]+/gm, '}');
+
+                s = s.replace(/\/\* beautify ignore:start \*\/\{/gm, '{');
+                s = s.replace(/\}\/\* beautify ignore:end \*\//gm, '}');
+                return s;
+            });
+
+            text = text.replace(/=\{\{/g, '= {{');
+        }
 
         return text;
     }
