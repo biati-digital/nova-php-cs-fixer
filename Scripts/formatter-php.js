@@ -288,7 +288,7 @@ class PHPFormatter {
                     log(stdOut);
                     format.error = stdOut.join('');
                     reject(format);
-                } else if (stdOut && stdOut.join('').includes('Fixed all files')) {
+                } else if (stdOut && stdOut.join('').includes('Fixed')) {
                     let phpCode = '';
 
                     const filePath = this.tmpFile;
