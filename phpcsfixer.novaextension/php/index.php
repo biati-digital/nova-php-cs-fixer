@@ -13,7 +13,7 @@ $config = $data['config'];
 
 $command = implode(' ', $command);
 $exec = shell_exec($command);
-$fixed_correctly = (strpos($exec, 'Fixed all files') !== false);
+$fixed_correctly = (strpos($exec, 'Fixed') !== false);
 
 echo json_encode([
     'apple' => true,
